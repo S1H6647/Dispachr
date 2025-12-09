@@ -1,0 +1,55 @@
+.auth-container {
+    height: 100vh;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+}
+
+.credentials-section {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: var(--background-color);
+}
+
+.credentials-section .welcome-message .title {
+    font-size: 2.5rem;
+    font-weight: 600;
+    color: var(--font-color);
+    letter-spacing: 4px;
+}
+
+.credentials-section .welcome-message .sub-title {
+    font-size: 1.2rem;
+    color: var(--sub-font-color);
+    letter-spacing: 1px;
+    margin-bottom: 2rem;
+}
+
+.signin-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.remember-me {
+    user-select: none;
+}
+
+@media (max-width: 768px) {
+    .auth-container {
+        grid-template-columns: 1fr;
+    }
+
+    .signin-image {
+        display: none;
+    }
+
+    .credentials-section .welcome-message .title {
+        font-size: 1.6rem;
+    }
+
+    .credentials-section .welcome-message .sub-title {
+        font-size: 1rem;
+    }
+}

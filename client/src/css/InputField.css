@@ -1,0 +1,53 @@
+.input-container {
+    position: relative;
+    margin: 1rem 0;
+}
+
+.label {
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+.input-container .leading-icon {
+    position: absolute;
+    top: 50%;
+    left: 1rem;
+    transform: translateY(-50%);
+    filter: invert(50%) saturate(50%);
+}
+
+.input-container .trailing-icon {
+    position: absolute;
+    top: 50%;
+    right: 1rem;
+    transform: translateY(-50%);
+    filter: invert(50%) saturate(50%);
+    cursor: pointer;
+}
+
+.input-container .input-field {
+    padding: 0.8rem 0;
+    padding-right: 1rem;
+    padding-left: 3rem;
+    border: 1px solid grey;
+    outline: none;
+    border-radius: 1rem;
+    min-width: 400px;
+    width: 100%;
+    height: 45px;
+}
+
+.input-container .input-field[type="password"] {
+    padding-right: 3rem;
+}
+
+.input-container .input-field:focus {
+    border: 1px solid hsl(0, 0%, 3%);
+    outline: none;
+}
+
+input[aria-invalid="true"],
+input[aria-invalid="true"]:focus {
+    border: 1px solid red !important;
+    outline: none;
+}
