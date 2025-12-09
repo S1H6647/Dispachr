@@ -1,4 +1,4 @@
-import "../css/InputField.css";
+import "../css/ui/InputField.css";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 

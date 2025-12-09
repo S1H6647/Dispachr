@@ -1,4 +1,4 @@
-import "../css/Button.css";
+import "../css/ui/Button.css";
 
 export default function Button({
     title,

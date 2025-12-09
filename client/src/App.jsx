@@ -1,21 +1,36 @@
-import SignUpPage from "./pages/SignUpPage";
-import SignInPage from "./pages/SignInPage";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
-import AuthLayout from "./components/AuthLayout";
-import ErrorPage from "./pages/ErrorPage";
+import SignUpPage from "./pages/auth/SignUpPage";
+import SignInPage from "./pages/auth/SignInPage";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import AuthLayout from "./layouts/AuthLayout";
+import DashboardLayout from "./layouts/DashboardLayout";
+import ErrorPage from "./pages/auth/ErrorPage";
+import Dashboard from "./pages/dashboard/Dashboard";
+import Posts from "./pages/posts/Posts";
 
 export default function App() {
     return (
         <>
             <BrowserRouter>
                 <Routes>
-                    <Route element={<AuthLayout />}>
-                        <Route path="auth/signin" element={<SignInPage />} />
-                        <Route path="auth/signup" element={<SignUpPage />} />
+                    <Route path="/auth" element={<AuthLayout />}>
                         <Route
-                            path="auth/*"
-                            element={<div>auth not found</div>}
-                        />
+                            index
+                            element={<Navigate to="/auth/signin" replace />}
+                        ></Route>
+                        <Route path="signin" element={<SignInPage />} />
+                        <Route path="signup" element={<SignUpPage />} />
+                    </Route>
+
+                    <Route element={<DashboardLayout />}>
+                        <Route
+                            path="/"
+                            element={<Navigate to="/dashboard" replace />}
+                        ></Route>
+                        <Route
+                            path="/dashboard"
+                            element={<Dashboard />}
+                        ></Route>
+                        <Route path="/posts" element={<Posts />}></Route>
                     </Route>
 
                     <Route path="*" element={<ErrorPage />} />

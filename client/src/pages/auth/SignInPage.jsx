@@ -1,77 +1,54 @@
-import image from "../assets/loginpage.jpg";
-import google from "../assets/Google.svg";
-import InputField from "../components/InputField";
-import "../css/Auth.css";
-import Button from "../components/Button";
+import image from "../../assets/loginpage.jpg";
+import google from "../../assets/Google.svg";
+import InputField from "../../components/InputField";
+import "../../css/auth/Auth.css";
+import Button from "../../components/Button";
 import { Link } from "react-router-dom";
-import {
-    EyeIcon,
-    EyeOffIcon,
-    LockIcon,
-    MailIcon,
-    UserRoundIcon,
-} from "lucide-react";
+import { EyeIcon, EyeOffIcon, LockIcon, MailIcon } from "lucide-react";
 import { useForm } from "react-hook-form";
+import { useState } from "react";
 
-export default function SignUpPage() {
+export default function SignInPage() {
     const {
         register,
-        watch,
         handleSubmit,
         formState: { errors, isSubmitting },
     } = useForm();
 
-    const password = watch("password");
+    const { isChecked, setIsChecked } = useState(false);
 
-    async function onSubmit(data) {
-        try {
-            console.log(data);
-            await new Promise((resolve) => setTimeout(resolve, 5000));
-        } catch (error) {
-            console.log("Error: ", error);
-        }
-    }
+    const onSubmit = async (e) => {
+        console.log(e);
+
+        const response = await fetch("/api/auth/signin", {
+            body: JSON.stringify(e),
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+        });
+
+        const resData = await response.json();
+        console.log(resData);
+    };
 
     return (
         <>
             <div className="auth-container">
                 <div className="credentials-section">
                     <div className="welcome-message">
-                        <p className="title">CREATE ACCOUNT</p>
+                        <p className="title">WELCOME BACK</p>
                         <p className="sub-title">
-                            Join us by creating your new account
+                            Welcome back! Please enter your detials
                         </p>
                     </div>
-
                     <form
-                        className="input-fields space-y-5"
                         onSubmit={handleSubmit(onSubmit)}
+                        className="input-fields space-y-5"
                     >
                         <InputField
-                            title={"Full Name"}
-                            inputType={"text"}
-                            placeholder={"Enter your full name"}
-                            leadingIcon={<UserRoundIcon />}
-                            register={register("fullName", {
-                                required: "Full Name is required",
-                                minLength: {
-                                    value: 3,
-                                    message:
-                                        "Name must contain atleast 3 characters",
-                                },
-                                pattern: {
-                                    value: /^([a-zA-Z0-9_\s]+)$/,
-                                    message:
-                                        "Name can only contain letters and spaces",
-                                },
-                            })}
-                            error={errors.fullName}
-                            ariaInvalid={errors.fullName ? "true" : "false"}
-                        />
-
-                        <InputField
                             title={"Email"}
-                            inputType={"email"}
+                            inputType={"text"}
                             placeholder={"Enter your email"}
                             leadingIcon={<MailIcon />}
                             register={register("email", {
@@ -109,31 +86,35 @@ export default function SignUpPage() {
                             ariaInvalid={errors.password ? "true" : "false"}
                         />
 
-                        <InputField
-                            title={"Confirm Password"}
-                            inputType={"password"}
-                            placeholder={"••••••••"}
-                            leadingIcon={<LockIcon />}
-                            trailingIcon={<EyeIcon />}
-                            trailingIconOff={<EyeOffIcon />}
-                            register={register("confirmPassword", {
-                                required: "Please confirm your password",
-                                validate: (value) =>
-                                    value === password ||
-                                    "Passwords do not match",
-                            })}
-                            error={errors.confirmPassword}
-                            ariaInvalid={
-                                errors.confirmPassword ? "true" : "false"
-                            }
-                        />
+                        <div className="flex flex-row justify-between items-center font-medium">
+                            <div>
+                                <input
+                                    type="checkbox"
+                                    id="remember-me"
+                                    className="m-1"
+                                    name="isRemember"
+                                    {...register("isRemember")}
+                                />
+                                <label
+                                    htmlFor="remember-me"
+                                    className="remember-me"
+                                >
+                                    Remember me
+                                </label>
+                            </div>
+
+                            <div className="text-blue-600 hover:underline">
+                                <a href="#">Forget password</a>
+                            </div>
+                        </div>
 
                         <div className="space-y-4">
                             <Button
-                                title={
-                                    isSubmitting ? "Signing Up..." : "Sign Up"
-                                }
+                                title={"Sign In"}
                                 buttonType={"submit"}
+                                onClick={() => {
+                                    console.log("This button was clicked");
+                                }}
                             />
 
                             <Button
@@ -144,33 +125,33 @@ export default function SignUpPage() {
                                             alt="Google"
                                             className="mr-2 w-7 h-7"
                                         />
-                                        <p>Sign up with Google</p>
+                                        <p>Sign in with google</p>
                                     </div>
                                 }
                                 buttonType={"button"}
                                 onClick={() => {
-                                    console.log("Google sign-up clicked");
+                                    console.log("This button was clicked");
                                 }}
+                                leadingIcon={google}
                                 varient="secondary"
                             />
                         </div>
 
                         <div className="text-center">
-                            Already have an account?
+                            Don't have an account?
                             <Link
-                                to="/auth/signin"
+                                to="/auth/signup"
                                 className="text-blue-600 ml-1 hover:underline"
                             >
-                                Sign in
+                                Sign up for free!
                             </Link>
                         </div>
                     </form>
                 </div>
-
                 <div className="signin-image">
                     <img
                         src={image}
-                        alt="Sign up Page Image"
+                        alt="Sign in Page Image"
                         draggable={false}
                     />
                 </div>
