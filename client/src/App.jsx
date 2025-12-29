@@ -1,11 +1,16 @@
-import SignUpPage from "./pages/auth/SignUpPage";
-import SignInPage from "./pages/auth/SignInPage";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import SignInPage from "./pages/auth/SignInPage";
+import SignUpPage from "./pages/auth/SignUpPage";
 import AuthLayout from "./layouts/AuthLayout";
 import DashboardLayout from "./layouts/DashboardLayout";
 import ErrorPage from "./pages/auth/ErrorPage";
-import Dashboard from "./pages/dashboard/Dashboard";
-import Posts from "./pages/posts/Posts";
+import { lazy } from "react";
+import { AllPosts } from "./pages/posts/AllPosts";
+import { TwitterPosts } from "./pages/posts/TwitterPosts";
+import { FacebookPosts } from "./pages/posts/FacebookPosts";
+
+const Dashboard = lazy(() => import("./pages/dashboard/Dashboard"));
+const Posts = lazy(() => import("./pages/posts/Posts"));
 
 export default function App() {
     return (
@@ -31,6 +36,15 @@ export default function App() {
                             element={<Dashboard />}
                         ></Route>
                         <Route path="/posts" element={<Posts />}></Route>
+                        <Route path="/all-posts" element={<AllPosts />}></Route>
+                        <Route
+                            path="/all-posts/twitter"
+                            element={<TwitterPosts />}
+                        ></Route>
+                        <Route
+                            path="/all-posts/facebook"
+                            element={<FacebookPosts />}
+                        ></Route>
                     </Route>
 
                     <Route path="*" element={<ErrorPage />} />

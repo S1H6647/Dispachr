@@ -1,0 +1,4 @@
+Get userId for fetching twitter post by:
+curl --request GET \
+  --url https://api.x.com/2/users/by/username/{username} \
+  --header 'Authorization: Bearer <token>'

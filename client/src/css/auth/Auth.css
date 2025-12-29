@@ -1,35 +1,52 @@
 .auth-container {
-    height: 100vh;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-}
-
-.credentials-section {
+    min-height: 100vh;
     display: flex;
-    flex-direction: column;
     justify-content: center;
     align-items: center;
-    background: var(--background-color);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    position: relative;
+    padding: 2rem;
 }
 
-.credentials-section .welcome-message .title {
-    font-size: 2.5rem;
+.auth-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1;
+}
+
+.auth-box {
+    position: relative;
+    z-index: 2;
+    background: var(--background-color);
+    padding: 3rem;
+    border-radius: 16px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    width: 100%;
+    max-width: 450px;
+    backdrop-filter: blur(10px);
+}
+
+.auth-box .welcome-message {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.auth-box .welcome-message .title {
+    font-size: 2rem;
     font-weight: 600;
     color: var(--font-color);
-    letter-spacing: 4px;
+    margin-bottom: 0.5rem;
 }
 
-.credentials-section .welcome-message .sub-title {
-    font-size: 1.2rem;
+.auth-box .welcome-message .sub-title {
+    font-size: 1rem;
     color: var(--sub-font-color);
-    letter-spacing: 1px;
-    margin-bottom: 2rem;
-}
-
-.signin-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
 }
 
 .remember-me {
@@ -38,18 +55,18 @@
 
 @media (max-width: 768px) {
     .auth-container {
-        grid-template-columns: 1fr;
+        padding: 1rem;
     }
 
-    .signin-image {
-        display: none;
+    .auth-box {
+        padding: 2rem;
     }
 
-    .credentials-section .welcome-message .title {
-        font-size: 1.6rem;
+    .auth-box .welcome-message .title {
+        font-size: 1.5rem;
     }
 
-    .credentials-section .welcome-message .sub-title {
-        font-size: 1rem;
+    .auth-box .welcome-message .sub-title {
+        font-size: 0.9rem;
     }
 }
