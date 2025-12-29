@@ -1,90 +1,152 @@
 import image from "../../assets/loginpage.jpg";
 import google from "../../assets/Google.svg";
-import InputField from "../../components/InputField";
+import { Input } from "../../components/ui/input";
+import { Label } from "../../components/ui/label";
+import { Button } from "../../components/ui/button";
 import "../../css/auth/Auth.css";
-import Button from "../../components/Button";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { EyeIcon, EyeOffIcon, LockIcon, MailIcon } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { useState } from "react";
+import { useAuth } from "../../hooks/useAuth";
 
 export default function SignInPage() {
+    const navigate = useNavigate();
+    const { clearAuth, setAuth } = useAuth();
+    const [showPassword, setShowPassword] = useState(false);
+    const [errorMessage, setErrorMessage] = useState("");
     const {
         register,
         handleSubmit,
-        formState: { errors, isSubmitting },
+        setFocus,
+        formState: { errors },
     } = useForm();
-
-    const { isChecked, setIsChecked } = useState(false);
 
     const onSubmit = async (e) => {
         console.log(e);
+        setErrorMessage(""); // Clear previous errors
 
-        const response = await fetch("/api/auth/signin", {
+        const response = await fetch("/api/auth/login", {
             body: JSON.stringify(e),
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
+            // credentials: "include",
         });
 
         const resData = await response.json();
         console.log(resData);
+        if (resData.status) {
+            clearAuth(); // Clear any stale cache
+            setAuth(resData.user); // Set new auth state
+            navigate("/dashboard", { replace: true });
+        } else {
+            setErrorMessage(
+                resData.message || "Login failed. Please try again."
+            );
+
+            if (response.status === 401) {
+                setFocus("email");
+            }
+        }
     };
 
     return (
         <>
-            <div className="auth-container">
-                <div className="credentials-section">
+            <div
+                className="auth-container"
+                style={{ backgroundImage: `url(${image})` }}
+            >
+                <div className="auth-overlay"></div>
+                <div className="auth-box">
                     <div className="welcome-message">
-                        <p className="title">WELCOME BACK</p>
-                        <p className="sub-title">
-                            Welcome back! Please enter your detials
-                        </p>
+                        <p className="title">Welcome Back!</p>
+                        <p className="sub-title">We're glad to see you again</p>
                     </div>
                     <form
                         onSubmit={handleSubmit(onSubmit)}
                         className="input-fields space-y-5"
                     >
-                        <InputField
-                            title={"Email"}
-                            inputType={"text"}
-                            placeholder={"Enter your email"}
-                            leadingIcon={<MailIcon />}
-                            register={register("email", {
-                                required: "Email is required",
-                                pattern: {
-                                    value: /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/,
-                                    message: "Invalid email address",
-                                },
-                            })}
-                            error={errors.email}
-                            ariaInvalid={errors.email ? "true" : "false"}
-                        />
+                        {errorMessage && (
+                            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                                {errorMessage}
+                            </div>
+                        )}
+                        <div className="space-y-2">
+                            <Label htmlFor="email">Email</Label>
+                            <div className="relative">
+                                <MailIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                <Input
+                                    id="email"
+                                    type="text"
+                                    placeholder="Enter your email"
+                                    className="pl-10"
+                                    aria-invalid={
+                                        errors.email ? "true" : "false"
+                                    }
+                                    {...register("email", {
+                                        required: "Email is required",
+                                        pattern: {
+                                            value: /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/,
+                                            message: "Invalid email address",
+                                        },
+                                    })}
+                                />
+                            </div>
+                            {errors.email && (
+                                <span className="text-red-500 text-sm">
+                                    {errors.email.message}
+                                </span>
+                            )}
+                        </div>
 
-                        <InputField
-                            title={"Password"}
-                            inputType={"password"}
-                            placeholder={"••••••••"}
-                            leadingIcon={<LockIcon />}
-                            trailingIcon={<EyeIcon />}
-                            trailingIconOff={<EyeOffIcon />}
-                            register={register("password", {
-                                required: "Password is required",
-                                minLength: {
-                                    value: 8,
-                                    message:
-                                        "Password must contain atleast 8 characters",
-                                },
-                                pattern: {
-                                    value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-                                    message:
-                                        "Password must contain uppercase, lowercase, and number",
-                                },
-                            })}
-                            error={errors.password}
-                            ariaInvalid={errors.password ? "true" : "false"}
-                        />
+                        <div className="space-y-2">
+                            <Label htmlFor="password">Password</Label>
+                            <div className="relative">
+                                <LockIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                <Input
+                                    id="password"
+                                    type={showPassword ? "text" : "password"}
+                                    placeholder="••••••••"
+                                    className="pl-10 pr-10"
+                                    aria-invalid={
+                                        errors.password ? "true" : "false"
+                                    }
+                                    {...register("password", {
+                                        required: "Password is required",
+                                        minLength: {
+                                            value: 8,
+                                            message:
+                                                "Password must contain atleast 8 characters",
+                                        },
+                                        pattern: {
+                                            value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
+                                            message:
+                                                "Password must contain uppercase, lowercase, and number",
+                                        },
+                                    })}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() =>
+                                        setShowPassword(!showPassword)
+                                    }
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                >
+                                    {showPassword ? (
+                                        <EyeOffIcon className="h-4 w-4" />
+                                    ) : (
+                                        <EyeIcon className="h-4 w-4" />
+                                    )}
+                                </button>
+                            </div>
+                            {errors.password && (
+                                <span className="text-red-500 text-sm">
+                                    {errors.password.message}
+                                </span>
+                            )}
+                        </div>
 
                         <div className="flex flex-row justify-between items-center font-medium">
                             <div>
@@ -109,32 +171,22 @@ export default function SignInPage() {
                         </div>
 
                         <div className="space-y-4">
-                            <Button
-                                title={"Sign In"}
-                                buttonType={"submit"}
-                                onClick={() => {
-                                    console.log("This button was clicked");
-                                }}
-                            />
+                            <Button type="submit" className="w-full">
+                                Sign In
+                            </Button>
 
                             <Button
-                                title={
-                                    <div className="flex w-full justify-center items-center">
-                                        <img
-                                            src={google}
-                                            alt="Google"
-                                            className="mr-2 w-7 h-7"
-                                        />
-                                        <p>Sign in with google</p>
-                                    </div>
-                                }
-                                buttonType={"button"}
-                                onClick={() => {
-                                    console.log("This button was clicked");
-                                }}
-                                leadingIcon={google}
-                                varient="secondary"
-                            />
+                                type="button"
+                                variant="outline"
+                                className="w-full"
+                            >
+                                <img
+                                    src={google}
+                                    alt="Google"
+                                    className="mr-2 w-5 h-5"
+                                />
+                                Sign in with Google
+                            </Button>
                         </div>
 
                         <div className="text-center">
@@ -147,13 +199,6 @@ export default function SignInPage() {
                             </Link>
                         </div>
                     </form>
-                </div>
-                <div className="signin-image">
-                    <img
-                        src={image}
-                        alt="Sign in Page Image"
-                        draggable={false}
-                    />
                 </div>
             </div>
         </>

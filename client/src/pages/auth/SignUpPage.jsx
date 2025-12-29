@@ -1,9 +1,10 @@
 import image from "../../assets/loginpage.jpg";
 import google from "../../assets/Google.svg";
-import InputField from "../../components/InputField";
+import { Input } from "../../components/ui/input";
+import { Label } from "../../components/ui/label";
+import { Button } from "../../components/ui/button";
 import "../../css/auth/Auth.css";
-import Button from "../../components/Button";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
     EyeIcon,
     EyeOffIcon,
@@ -12,21 +13,49 @@ import {
     UserRoundIcon,
 } from "lucide-react";
 import { useForm } from "react-hook-form";
+import { useState } from "react";
 
 export default function SignUpPage() {
+    const navigate = useNavigate();
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [successMessage, setSuccessMessage] = useState("");
+    const [errorMessage, setErrorMessage] = useState("");
     const {
         register,
         watch,
         handleSubmit,
+        setFocus,
         formState: { errors, isSubmitting },
     } = useForm();
 
     const password = watch("password");
 
-    async function onSubmit(data) {
+    async function onSubmit(e) {
         try {
+            setErrorMessage("");
+            console.log(e);
+
+            const response = await fetch("http://localhost:8080/api/users/", {
+                body: JSON.stringify(e),
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            });
+
+            const data = await response.json();
             console.log(data);
-            await new Promise((resolve) => setTimeout(resolve, 5000));
+            if (data.status) {
+                setSuccessMessage(data.message);
+                navigate("/dashboard", { replace: true });
+            } else {
+                setErrorMessage(data.message);
+                //` Focus email input if email already exists (409 is conflict)
+                if (response.status === 409) {
+                    setFocus("email");
+                }
+            }
         } catch (error) {
             console.log("Error: ", error);
         }
@@ -34,12 +63,16 @@ export default function SignUpPage() {
 
     return (
         <>
-            <div className="auth-container">
-                <div className="credentials-section">
+            <div
+                className="auth-container"
+                style={{ backgroundImage: `url(${image})` }}
+            >
+                <div className="auth-overlay"></div>
+                <div className="auth-box">
                     <div className="welcome-message">
-                        <p className="title">CREATE ACCOUNT</p>
+                        <p className="title">Welcome Aboard!</p>
                         <p className="sub-title">
-                            Join us by creating your new account
+                            We're excited to have you here
                         </p>
                     </div>
 
@@ -47,112 +80,200 @@ export default function SignUpPage() {
                         className="input-fields space-y-5"
                         onSubmit={handleSubmit(onSubmit)}
                     >
-                        <InputField
-                            title={"Full Name"}
-                            inputType={"text"}
-                            placeholder={"Enter your full name"}
-                            leadingIcon={<UserRoundIcon />}
-                            register={register("fullName", {
-                                required: "Full Name is required",
-                                minLength: {
-                                    value: 3,
-                                    message:
-                                        "Name must contain atleast 3 characters",
-                                },
-                                pattern: {
-                                    value: /^([a-zA-Z0-9_\s]+)$/,
-                                    message:
-                                        "Name can only contain letters and spaces",
-                                },
-                            })}
-                            error={errors.fullName}
-                            ariaInvalid={errors.fullName ? "true" : "false"}
-                        />
+                        <div className="space-y-2">
+                            {successMessage && (
+                                <div className="bg-green-100 border border-green-400 px-4 py-3 rounded text-green-700">
+                                    {successMessage}
+                                </div>
+                            )}
+                            {errorMessage && (
+                                <div className="bg-red-100 border border-red-400 px-4 py-3 rounded text-red-700">
+                                    {errorMessage}
+                                </div>
+                            )}
+                            <Label htmlFor="fullName">Full Name</Label>
+                            <div className="relative">
+                                <UserRoundIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                <Input
+                                    id="fullName"
+                                    type="text"
+                                    placeholder="Enter your full name"
+                                    className="pl-10"
+                                    aria-invalid={
+                                        errors.fullName ? "true" : "false"
+                                    }
+                                    {...register("fullName", {
+                                        required: "Full Name is required",
+                                        minLength: {
+                                            value: 3,
+                                            message:
+                                                "Name must contain atleast 3 characters",
+                                        },
+                                        pattern: {
+                                            value: /^([a-zA-Z0-9_\s]+)$/,
+                                            message:
+                                                "Name can only contain letters and spaces",
+                                        },
+                                    })}
+                                />
+                            </div>
+                            {errors.fullName && (
+                                <span className="text-red-500 text-sm">
+                                    {errors.fullName.message}
+                                </span>
+                            )}
+                        </div>
 
-                        <InputField
-                            title={"Email"}
-                            inputType={"email"}
-                            placeholder={"Enter your email"}
-                            leadingIcon={<MailIcon />}
-                            register={register("email", {
-                                required: "Email is required",
-                                pattern: {
-                                    value: /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/,
-                                    message: "Invalid email address",
-                                },
-                            })}
-                            error={errors.email}
-                            ariaInvalid={errors.email ? "true" : "false"}
-                        />
+                        <div className="space-y-2">
+                            <Label htmlFor="email">Email</Label>
+                            <div className="relative">
+                                <MailIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                <Input
+                                    id="email"
+                                    type="email"
+                                    placeholder="Enter your email"
+                                    className="pl-10"
+                                    aria-invalid={
+                                        errors.email ? "true" : "false"
+                                    }
+                                    {...register("email", {
+                                        required: "Email is required",
+                                        pattern: {
+                                            value: /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/,
+                                            message: "Invalid email address",
+                                        },
+                                    })}
+                                />
+                            </div>
+                            {errors.email && (
+                                <span className="text-red-500 text-sm">
+                                    {errors.email.message}
+                                </span>
+                            )}
+                        </div>
 
-                        <InputField
-                            title={"Password"}
-                            inputType={"password"}
-                            placeholder={"••••••••"}
-                            leadingIcon={<LockIcon />}
-                            trailingIcon={<EyeIcon />}
-                            trailingIconOff={<EyeOffIcon />}
-                            register={register("password", {
-                                required: "Password is required",
-                                minLength: {
-                                    value: 8,
-                                    message:
-                                        "Password must contain atleast 8 characters",
-                                },
-                                pattern: {
-                                    value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
-                                    message:
-                                        "Password must contain uppercase, lowercase, and number",
-                                },
-                            })}
-                            error={errors.password}
-                            ariaInvalid={errors.password ? "true" : "false"}
-                        />
+                        <div className="space-y-2">
+                            <Label htmlFor="password">Password</Label>
+                            <div className="relative">
+                                <LockIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                <Input
+                                    id="password"
+                                    type={showPassword ? "text" : "password"}
+                                    placeholder="••••••••"
+                                    className="pl-10 pr-10"
+                                    aria-invalid={
+                                        errors.password ? "true" : "false"
+                                    }
+                                    {...register("password", {
+                                        required: "Password is required",
+                                        minLength: {
+                                            value: 8,
+                                            message:
+                                                "Password must contain atleast 8 characters",
+                                        },
+                                        pattern: {
+                                            value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
+                                            message:
+                                                "Password must contain uppercase, lowercase, and number",
+                                        },
+                                    })}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() =>
+                                        setShowPassword(!showPassword)
+                                    }
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                >
+                                    {showPassword ? (
+                                        <EyeOffIcon className="h-4 w-4" />
+                                    ) : (
+                                        <EyeIcon className="h-4 w-4" />
+                                    )}
+                                </button>
+                            </div>
+                            {errors.password && (
+                                <span className="text-red-500 text-sm">
+                                    {errors.password.message}
+                                </span>
+                            )}
+                        </div>
 
-                        <InputField
-                            title={"Confirm Password"}
-                            inputType={"password"}
-                            placeholder={"••••••••"}
-                            leadingIcon={<LockIcon />}
-                            trailingIcon={<EyeIcon />}
-                            trailingIconOff={<EyeOffIcon />}
-                            register={register("confirmPassword", {
-                                required: "Please confirm your password",
-                                validate: (value) =>
-                                    value === password ||
-                                    "Passwords do not match",
-                            })}
-                            error={errors.confirmPassword}
-                            ariaInvalid={
-                                errors.confirmPassword ? "true" : "false"
-                            }
-                        />
+                        <div className="space-y-2">
+                            <Label htmlFor="confirmPassword">
+                                Confirm Password
+                            </Label>
+                            <div className="relative">
+                                <LockIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                <Input
+                                    id="confirmPassword"
+                                    type={
+                                        showConfirmPassword
+                                            ? "text"
+                                            : "password"
+                                    }
+                                    placeholder="••••••••"
+                                    className="pl-10 pr-10"
+                                    aria-invalid={
+                                        errors.confirmPassword
+                                            ? "true"
+                                            : "false"
+                                    }
+                                    {...register("confirmPassword", {
+                                        required:
+                                            "Please confirm your password",
+                                        validate: (value) =>
+                                            value === password ||
+                                            "Passwords do not match",
+                                    })}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() =>
+                                        setShowConfirmPassword(
+                                            !showConfirmPassword
+                                        )
+                                    }
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                >
+                                    {showConfirmPassword ? (
+                                        <EyeOffIcon className="h-4 w-4" />
+                                    ) : (
+                                        <EyeIcon className="h-4 w-4" />
+                                    )}
+                                </button>
+                            </div>
+                            {errors.confirmPassword && (
+                                <span className="text-red-500 text-sm">
+                                    {errors.confirmPassword.message}
+                                </span>
+                            )}
+                        </div>
 
                         <div className="space-y-4">
                             <Button
-                                title={
-                                    isSubmitting ? "Signing Up..." : "Sign Up"
-                                }
-                                buttonType={"submit"}
-                            />
+                                type="submit"
+                                className="w-full"
+                                disabled={isSubmitting}
+                            >
+                                {isSubmitting ? "Signing Up..." : "Sign Up"}
+                            </Button>
 
                             <Button
-                                title={
-                                    <div className="flex w-full justify-center items-center">
-                                        <img
-                                            src={google}
-                                            alt="Google"
-                                            className="mr-2 w-7 h-7"
-                                        />
-                                        <p>Sign up with Google</p>
-                                    </div>
-                                }
-                                buttonType={"button"}
+                                type="button"
+                                variant="outline"
+                                className="w-full"
                                 onClick={() => {
                                     console.log("Google sign-up clicked");
                                 }}
-                                varient="secondary"
-                            />
+                            >
+                                <img
+                                    src={google}
+                                    alt="Google"
+                                    className="mr-2 w-5 h-5"
+                                />
+                                Sign up with Google
+                            </Button>
                         </div>
 
                         <div className="text-center">
@@ -165,14 +286,6 @@ export default function SignUpPage() {
                             </Link>
                         </div>
                     </form>
-                </div>
-
-                <div className="signin-image">
-                    <img
-                        src={image}
-                        alt="Sign up Page Image"
-                        draggable={false}
-                    />
                 </div>
             </div>
         </>
