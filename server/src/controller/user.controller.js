@@ -1,5 +1,7 @@
-import userSchema from "../schema/user.schema";
-import { argon2id } from "argon2";
+import { email } from "zod";
+import userSchema from "../schema/user.schema.js";
+import argon2 from "argon2";
+import { caplitalize } from "../utils/user.caplitalize.js";
 
 const getAllUser = async (_, response) => {
     try {
@@ -21,7 +23,7 @@ const getUserById = async (request, response) => {
         const user = await userSchema.findByPk(id);
 
         if (!user) {
-            response.status(404).json({ message: "User not found." });
+            return response.status(404).json({ message: "User not found." });
         }
 
         response.status(200).json({
@@ -43,23 +45,25 @@ const createUser = async (request, response) => {
 
         //` Checking whether the incoming data are null or not
         if (!fullName || !email || !password || !confirmPassword) {
-            await response.status(400).json({ message: "Invalid payload" });
+            return response.status(400).json({ message: "Invalid payload" });
         }
 
         //` Authentication before adding to the db
         if (password !== confirmPassword) {
-            response.status(400).json({ message: "Password did not match." });
+            return response
+                .status(400)
+                .json({ message: "Password did not match." });
         }
 
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
-            response.status(400).json({ message: "Invalid email." });
+            return response.status(400).json({ message: "Invalid email." });
         }
 
         const passwordRegex =
             /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
         if (!passwordRegex.test(password)) {
-            response.status(400).json({
+            return response.status(400).json({
                 message:
                     "Password must be at least 8 characters with uppercase, lowercase, number, and special character.",
             });
@@ -69,24 +73,27 @@ const createUser = async (request, response) => {
             where: { email: email.toLowerCase() },
         });
         if (existingUser) {
-            response.status(400).json({ message: "Email already registered." });
+            return response
+                .status(409)
+                .json({ message: "Email already registered." });
         }
 
-        const hashedPassword = await argon2id.hash(password);
+        const hashedPassword = await argon2.hash(password);
 
         const userData = await userSchema.create({
-            fullName: fullName.toLowerCase(),
+            fullName: caplitalize(fullName),
             email: email.toLowerCase().trim(),
             password: hashedPassword,
         });
 
-        response.status(200).json({
+        response.status(201).json({
             data: {
                 id: userData.id,
                 fullName: userData.fullName,
                 email: userData.email,
             },
-            message: "Successfully user created.",
+            status: true,
+            message: "User successfully created.",
         });
 
         console.log("✅ User successfully created");
@@ -102,7 +109,7 @@ const deleteUserById = async (request, response) => {
         const user = await userSchema.findByPk(id);
 
         if (!user) {
-            response.status(404).json({ message: "User not found." });
+            return response.status(404).json({ message: "User not found." });
         }
 
         await user.destroy();
@@ -125,7 +132,7 @@ const editUserById = async (request, response) => {
         const user = await userSchema.findByPk(id);
 
         if (!user) {
-            response.status(404).json({ message: "User not found." });
+            return response.status(404).json({ message: "User not found." });
         }
 
         await user.update({
@@ -143,4 +150,33 @@ const editUserById = async (request, response) => {
     }
 };
 
-export { getAllUser, getUserById, createUser, deleteUserById, editUserById };
+const getCurrentUser = async (request, response) => {
+    try {
+        const user = request.user;
+
+        response.status(200).json({
+            user: {
+                id: user.id,
+                fullName: user.fullName,
+                email: user.email,
+            },
+            status: true,
+        });
+    } catch (error) {
+        console.error(`❌ Error in getCurrentUser controller.`);
+        response
+            .status(500)
+            .json({ status: false, message: "Failed to get the current user" });
+    }
+};
+
+const usersPost = async (request, response) => {};
+
+export {
+    getAllUser,
+    getUserById,
+    createUser,
+    deleteUserById,
+    editUserById,
+    getCurrentUser,
+};
