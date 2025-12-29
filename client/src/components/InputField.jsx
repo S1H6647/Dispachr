@@ -25,7 +25,9 @@ function InputField({
         <>
             <p className="label">{title}</p>
             <div className="input-container">
-                <span className="leading-icon">{leadingIcon}</span>
+                {leadingIcon && (
+                    <span className="leading-icon">{leadingIcon}</span>
+                )}
                 <input
                     {...register}
                     type={currentInputType}
