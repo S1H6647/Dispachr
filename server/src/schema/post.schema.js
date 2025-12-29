@@ -10,16 +10,41 @@ const postSchema = sequelize.define("Posts", {
     title: {
         type: DataTypes.STRING,
         allowNull: false,
+        unique: false,
     },
     description: {
-        type: DataTypes.STRING,
+        type: DataTypes.STRING(255),
         allowNull: false,
-        unique: true,
+        unique: false,
     },
     // image: {
-    //     type: DataTypes.STRING, // Store image URL
-    //     allowNull: false,
+    //     type: DataTypes.STRING,
+    //     allowNull: true,
+    // }, // Image URL
+
+    platforms: {
+        type: DataTypes.JSON,
+        allowNull: true,
+    }, // e.g., ["twitter", "facebook", "linkedin"]
+
+    // status: {
+    //     type: DataTypes.ENUM("draft", "scheduled", "published", "failed"),
+    //     defaultValue: "draft",
     // },
+    publishedAt: {
+        type: DataTypes.DATE,
+        defaultValue: DataTypes.NOW,
+    },
+
+    createdAt: {
+        type: DataTypes.DATE,
+        defaultValue: DataTypes.NOW,
+    },
+
+    updatedAt: {
+        type: DataTypes.DATE,
+        defaultValue: DataTypes.NOW,
+    },
 });
 
 export default postSchema;

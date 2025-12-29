@@ -8,7 +8,7 @@ const sequelize = new Sequelize("dispachr", "postgres", "076493", {
 const connection = async () => {
     try {
         // await sequelize.authenticate();
-        await sequelize.sync({alter : true})
+        await sequelize.sync({ alter: true });
         console.log("✅ Database connection successfully established.");
     } catch (error) {
         console.error(`❌ Failed to connect to database. ${error}`);
