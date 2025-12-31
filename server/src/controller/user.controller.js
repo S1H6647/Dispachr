@@ -1,7 +1,7 @@
 import { email } from "zod";
 import userSchema from "../schema/user.schema.js";
 import argon2 from "argon2";
-import { caplitalize } from "../utils/user.caplitalize.js";
+import { caplitalizeEachWord } from "../utils/user.caplitalize.js";
 
 const getAllUser = async (_, response) => {
     try {
@@ -81,7 +81,7 @@ const createUser = async (request, response) => {
         const hashedPassword = await argon2.hash(password);
 
         const userData = await userSchema.create({
-            fullName: caplitalize(fullName),
+            fullName: caplitalizeEachWord(fullName),
             email: email.toLowerCase().trim(),
             password: hashedPassword,
         });

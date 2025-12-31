@@ -3,22 +3,15 @@ import {
     CardContent,
     CardDescription,
     CardHeader,
-    CardTitle,
 } from "@/components/ui/card";
 import { useEffect, useState } from "react";
 import {
     Globe,
-    Loader2,
     Calendar,
-    MessageSquare,
-    DeleteIcon,
     Trash2Icon,
     PencilIcon,
     FacebookIcon,
-    Pencil,
-    Trash2,
 } from "lucide-react";
-import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Header } from "@/components/sidebar/Header";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { Button } from "@/components/ui/button";
@@ -33,6 +26,8 @@ import {
     DialogFooter,
 } from "@/components/ui/dialog";
 import { NoPost } from "@/components/ui/NoPost";
+import toast, { Toaster } from "react-hot-toast";
+import { Input } from "@/components/ui/input";
 
 export function FacebookPosts() {
     const [posts, setPosts] = useState([]);
@@ -40,6 +35,10 @@ export function FacebookPosts() {
     const [loading, setLoading] = useState(true);
     const [editDialog, setEditDialog] = useState(false);
     const [selectedPost, setSelectedPost] = useState(null);
+    const [deletingPostId, setDeletingPostId] = useState(null);
+    const [editTitle, setEditTitle] = useState("");
+    const [editDescription, setEditDescription] = useState("");
+    const [isUpdating, setIsUpdating] = useState(false);
 
     useEffect(() => {
         const fetchAllPosts = async () => {
@@ -79,13 +78,117 @@ export function FacebookPosts() {
         );
     }
 
+    const handleSaveEdit = async (postId) => {
+        try {
+            if (!editTitle || !editDescription) {
+                toast.error("Both title and description are required");
+                return;
+            }
+
+            if (!selectedPost) {
+                toast.error("No post selected");
+                return;
+            }
+
+            setIsUpdating(true); // Set to true at the start
+
+            const response = await fetch(`/api/posts/facebook/${postId}`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    newTitle: editTitle,
+                    newDescription: editDescription,
+                }),
+            });
+
+            // Handle response parsing safely
+            let data;
+            try {
+                const text = await response.text();
+                data = text ? JSON.parse(text) : {};
+            } catch (parseError) {
+                console.error("JSON parse error:", parseError);
+                toast.error("Invalid response from server");
+                return;
+            }
+
+            if (response.ok && data.status) {
+                toast.success(data.message || "Post updated successfully");
+                // Update the post in the state
+                setPosts(
+                    posts.map((p) =>
+                        p.id === selectedPost.id
+                            ? {
+                                  ...p,
+                                  message: `${editTitle}\n\n${editDescription}`,
+                              }
+                            : p
+                    )
+                );
+                setEditDialog(false);
+                setSelectedPost(null);
+                setEditTitle("");
+                setEditDescription("");
+            } else {
+                toast.error(data.message || "Failed to update post");
+            }
+        } catch (error) {
+            console.error("Update error:", error);
+            toast.error(error.message || "Something went wrong");
+        } finally {
+            setIsUpdating(false); // Always set to false when done
+        }
+    };
+
+    const handleDeletePost = async (postId) => {
+        try {
+            setDeletingPostId(postId);
+            const response = await fetch(`/api/posts/facebook/${postId}`, {
+                method: "DELETE",
+            });
+            const data = await response.json();
+            console.log(data);
+
+            // Send Toast on Delete
+            if (response.ok && data.status) {
+                toast.success(data.message || "Post deleted successfully");
+                // Remove the post from the list
+                setPosts(posts.filter((p) => p.id !== postId));
+            } else {
+                toast.error(data.message || "Failed to delete post");
+            }
+
+            // Close the dialog
+            setDeletingPostId(null);
+        } catch (error) {
+            console.error(error);
+            toast.error(
+                error.message || "Something went wrong while deleting the post"
+            );
+            setDeletingPostId(null);
+        }
+    };
+
     return (
         <div className="min-h-screen flex flex-col w-full bg-linear-to-br from-slate-50 via-blue-50 to-slate-100">
             {/* Header */}
             <Header title="Facebook Posts" icon={<FacebookIcon />} />
+            <Toaster />
 
             {/* Edit Dialog */}
-            <Dialog open={editDialog} onOpenChange={setEditDialog}>
+            <Dialog
+                open={editDialog}
+                onOpenChange={(open) => {
+                    setEditDialog(open);
+                    if (!open) {
+                        setSelectedPost(null);
+                        setEditTitle("");
+                        setEditDescription("");
+                    }
+                }}
+            >
                 <DialogContent className="sm:max-w-md">
                     <DialogHeader>
                         <DialogTitle className="text-xl font-semibold">
@@ -100,17 +203,23 @@ export function FacebookPosts() {
                             <p className="text-sm font-semibold text-slate-700">
                                 Title:
                             </p>
-                            <p className="text-sm text-slate-600 bg-slate-50 p-3 rounded-lg border border-slate-200">
-                                {selectedPost?.title}
-                            </p>
+                            <Input
+                                value={editTitle}
+                                onChange={(e) => setEditTitle(e.target.value)}
+                                className="text-sm text-slate-600 bg-slate-50 p-3 rounded-lg border border-slate-200"
+                            />
                         </div>
                         <div className="space-y-2">
                             <p className="text-sm font-semibold text-slate-700">
                                 Description:
                             </p>
-                            <p className="text-sm text-slate-600 bg-slate-50 p-3 rounded-lg border border-slate-200 max-h-40 overflow-y-auto">
-                                {selectedPost?.description}
-                            </p>
+                            <Input
+                                value={editDescription}
+                                onChange={(e) =>
+                                    setEditDescription(e.target.value)
+                                }
+                                className="text-sm text-slate-600 bg-slate-50 p-3 rounded-lg border border-slate-200 max-h-40 overflow-y-auto"
+                            />
                         </div>
                         {selectedPost?.platforms &&
                             selectedPost.platforms.length > 0 && (
@@ -137,7 +246,12 @@ export function FacebookPosts() {
                         <DialogClose asChild>
                             <Button variant="outline">Close</Button>
                         </DialogClose>
-                        <Button>Save Changes</Button>
+                        <Button
+                            onClick={() => handleSaveEdit(selectedPost.id)}
+                            disabled={isUpdating || !selectedPost}
+                        >
+                            {isUpdating ? "Updating..." : "Save Changes"}
+                        </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
@@ -171,12 +285,9 @@ export function FacebookPosts() {
                                     className="group relative overflow-hidden rounded-xl border border-slate-200 bg-white/90 backdrop-blur-sm shadow-md hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 hover:border-purple-300"
                                 >
                                     <CardHeader className="space-y-3">
-                                        <CardTitle className="line-clamp-2 text-lg leading-tight">
-                                            {post.title}
-                                        </CardTitle>
                                         <CardDescription className="flex items-center justify-between gap-2 text-xs">
                                             <div className="flex gap-2 min-h-9">
-                                                <Calendar className="size-4.5" />
+                                                <Calendar className="size-4.5 text-purple-500" />
                                                 {new Date(
                                                     post.created_time
                                                 ).toLocaleDateString("en-US", {
@@ -193,24 +304,94 @@ export function FacebookPosts() {
                                                     className="h-8 w-8 hover:bg-blue-100 hover:text-blue-600"
                                                     onClick={() => {
                                                         setSelectedPost(post);
+                                                        // Parse the message to extract title and description
+                                                        // Facebook posts have message field, format: "title\n\ndescription"
+                                                        const messageParts =
+                                                            post.message
+                                                                ? post.message.split(
+                                                                      "\n\n"
+                                                                  )
+                                                                : ["", ""];
+                                                        setEditTitle(
+                                                            messageParts[0] ||
+                                                                ""
+                                                        );
+                                                        setEditDescription(
+                                                            messageParts
+                                                                .slice(1)
+                                                                .join("\n\n") ||
+                                                                ""
+                                                        );
                                                         setEditDialog(true);
                                                     }}
                                                 >
-                                                    <Pencil className="h-4 w-4" />
+                                                    <PencilIcon className="h-4 w-4" />
                                                 </Button>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    className="h-8 w-8 hover:bg-red-100 hover:text-red-600"
-                                                    // onClick={...} // Add delete logic here
+                                                <Dialog
+                                                    open={
+                                                        deletingPostId ===
+                                                        post.id
+                                                    }
+                                                    onOpenChange={(open) =>
+                                                        !open &&
+                                                        setDeletingPostId(null)
+                                                    }
                                                 >
-                                                    <Trash2 className="h-4 w-4" />
-                                                </Button>
+                                                    <DialogTrigger asChild>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="h-8 w-8 hover:bg-red-100 hover:text-red-600"
+                                                            onClick={() =>
+                                                                setDeletingPostId(
+                                                                    post.id
+                                                                )
+                                                            }
+                                                        >
+                                                            <Trash2Icon className="h-4 w-4" />
+                                                        </Button>
+                                                    </DialogTrigger>
+                                                    <DialogContent className="sm:max-w-md">
+                                                        <DialogHeader>
+                                                            <DialogTitle className="text-xl font-semibold">
+                                                                Delete Post
+                                                            </DialogTitle>
+                                                            <DialogDescription>
+                                                                Are you
+                                                                absolutely sure?
+                                                                This action
+                                                                cannot be
+                                                                undone. This
+                                                                will permanently
+                                                                delete this post
+                                                                from our servers.
+                                                            </DialogDescription>
+                                                        </DialogHeader>
+                                                        <DialogFooter>
+                                                            <DialogClose
+                                                                asChild
+                                                            >
+                                                                <Button variant="outline">
+                                                                    No
+                                                                </Button>
+                                                            </DialogClose>
+                                                            <Button
+                                                                onClick={() =>
+                                                                    handleDeletePost(
+                                                                        post.id
+                                                                    )
+                                                                }
+                                                            >
+                                                                Yes
+                                                            </Button>
+                                                        </DialogFooter>
+                                                    </DialogContent>
+                                                </Dialog>
                                             </div>
                                         </CardDescription>
                                     </CardHeader>
                                     <CardContent className="space-y-4">
-                                        <p className="text-sm text-gray-900 line-clamp-4 leading-relaxed">
+                                        <p className="text-base text-gray-900 line-clamp-4 leading-relaxed">
                                             {post.message}
                                         </p>
                                         {post.platforms &&

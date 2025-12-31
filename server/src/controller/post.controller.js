@@ -1,4 +1,3 @@
-import { request, response } from "express";
 import postSchema from "../schema/post.schema.js";
 import {
     createTweetService,
@@ -6,8 +5,13 @@ import {
 } from "../services/twitter.service.js";
 import {
     createFacebookPost,
+    deleteFacebookPost,
     getFacebookPost,
+    updateFacebookPost,
 } from "../services/facebook.service.js";
+import { caplitalizeFirstWord } from "../utils/user.caplitalize.js";
+import { request } from "http";
+import { response } from "express";
 
 const getAllPosts = async (_, response) => {
     try {
@@ -41,14 +45,11 @@ const getFacebookPosts = async (_, response) => {
     try {
         const posts = await getFacebookPost();
 
-        // response.status(200).json({
-        //     ...posts,
-        // });
+        // console.log(`Facebook Posts: ${posts}`);
 
         response.status(200).json({
             data: posts.data,
         });
-        console.log(posts);
     } catch (error) {
         console.error(`❌ Error in getFacebookPosts controller. ${error}`);
         response
@@ -89,8 +90,8 @@ const createPost = async (request, response) => {
         }
 
         const post = await postSchema.create({
-            title,
-            description,
+            title: caplitalizeFirstWord(title),
+            description: caplitalizeFirstWord(description),
         });
 
         response.status(201).json({
@@ -130,6 +131,41 @@ const deletePostById = async (request, response) => {
     }
 };
 
+const deleteFacebookPosts = async (request, response) => {
+    try {
+        const { id: postId } = request.params;
+
+        if (!postId) {
+            return response.status(400).json({
+                status: false,
+                message: "No Facebook postId provided.",
+            });
+        }
+
+        console.log(`Facebook post id : ${postId}`);
+
+        const deletedPost = deleteFacebookPost(postId);
+
+        console.log("Delete message: ", deletedPost);
+
+        if (deletedPost.success) {
+            response
+                .status(200)
+                .json({ status: true, message: deletedPost.message });
+        } else {
+            response
+                .status(500)
+                .json({ status: false, message: deletedPost.message });
+        }
+    } catch (error) {
+        console.error(`❌ Failed to delete the Facebook post: ${error}`);
+        response.status(500).json({
+            status: false,
+            message: "Failed to delete Facebook post.",
+        });
+    }
+};
+
 const editPostById = async (request, response) => {
     try {
         const { id } = request.params;
@@ -146,18 +182,61 @@ const editPostById = async (request, response) => {
 
         // Delete
         await post.update({
-            title: title ? title : post.title,
+            title: caplitalizeFirstWord(title) ? title : post.title,
             description: description ? description : post.description,
         });
 
         response.status(200).json({
-            data: post,
+            status: true,
             message: "Post successfully updated",
         });
         console.log(`✅ Post with id ${id} successfully updated`);
     } catch (error) {
         console.error(`❌ Failed to delete the post`);
         response.status(500).json({ message: "Failed to update post." });
+    }
+};
+
+const editFacebookPostById = async (request, response) => {
+    try {
+        const { id: postId } = request.params;
+        const { newTitle, newDescription } = request.body;
+
+        if (!postId) {
+            return response.status(400).json({
+                status: false,
+                message: "No Facebook postId provided.",
+            });
+        }
+
+        if (!newTitle || !newDescription) {
+            return response.status(400).json({
+                status: false,
+                message: "Both newTitle and newDescription are required.",
+            });
+        }
+
+        const updatedPost = await updateFacebookPost(
+            postId,
+            newTitle,
+            newDescription
+        );
+
+        if (updatedPost.success) {
+            response
+                .status(200)
+                .json({ status: true, message: updatedPost.message });
+        } else {
+            response
+                .status(500)
+                .json({ status: false, message: updatedPost.message });
+        }
+    } catch (error) {
+        console.error(`❌ Failed to update Facebook post: ${error}`);
+        response.status(500).json({
+            status: false,
+            message: "Failed to update Facebook post.",
+        });
     }
 };
 
@@ -249,5 +328,7 @@ export {
     createPost,
     deletePostById,
     editPostById,
+    editFacebookPostById,
     dispatchPost,
+    deleteFacebookPosts,
 };

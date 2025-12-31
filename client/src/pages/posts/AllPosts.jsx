@@ -6,7 +6,7 @@ import {
     CardTitle,
 } from "@/components/ui/card";
 import { useEffect, useState } from "react";
-import { Globe, Calendar, MessageSquare, Pencil, Trash2 } from "lucide-react";
+import { Globe, Calendar, MessageSquare, Pencil, Trash2, PencilIcon, Trash2Icon } from "lucide-react";
 import { Header } from "@/components/sidebar/Header";
 import { Button } from "@/components/ui/button";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
@@ -18,9 +18,11 @@ import {
     DialogDescription,
     DialogClose,
     DialogFooter,
+    DialogTrigger,
 } from "@/components/ui/dialog";
 import { NoPost } from "@/components/ui/NoPost";
 import toast, { Toaster } from "react-hot-toast";
+import { Input } from "@/components/ui/input";
 
 export function AllPosts() {
     const [posts, setPosts] = useState([]);
@@ -28,6 +30,8 @@ export function AllPosts() {
     const [loading, setLoading] = useState(true);
     const [editDialog, setEditDialog] = useState(false);
     const [selectedPost, setSelectedPost] = useState(null);
+    const [editTitle, setEditTitle] = useState("");
+    const [editDescription, setEditDescription] = useState("");
 
     useEffect(() => {
         const fetchAllPosts = async () => {
@@ -90,6 +94,45 @@ export function AllPosts() {
         }
     };
 
+    const handleSaveEdit = async () => {
+        try {
+            const response = await fetch(`/api/posts/${selectedPost.id}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    title: editTitle,
+                    description: editDescription,
+                }),
+            });
+
+            const data = await response.json();
+
+            if (data.status) {
+                toast.success(data.message);
+                // Update the post in the state
+                setPosts(
+                    posts.map((p) =>
+                        p.id === selectedPost.id
+                            ? {
+                                  ...p,
+                                  title: editTitle,
+                                  description: editDescription,
+                              }
+                            : p
+                    )
+                );
+                setEditDialog(false);
+            } else {
+                toast.error("Failed to update post");
+            }
+        } catch (error) {
+            console.log(error);
+            toast.error("Something went wrong");
+        }
+    };
+
     return (
         <div className="min-h-screen flex flex-col w-full bg-linear-to-br from-slate-50 via-purple-50 to-slate-100">
             {/* Header */}
@@ -97,7 +140,17 @@ export function AllPosts() {
             <Toaster />
 
             {/* Edit Dialog */}
-            <Dialog open={editDialog} onOpenChange={setEditDialog}>
+            <Dialog
+                open={editDialog}
+                onOpenChange={(open) => {
+                    setEditDialog(open);
+                    if (!open) {
+                        setSelectedPost(null);
+                        setEditTitle("");
+                        setEditDescription("");
+                    }
+                }}
+            >
                 <DialogContent className="sm:max-w-md">
                     <DialogHeader>
                         <DialogTitle className="text-xl font-semibold">
@@ -112,17 +165,23 @@ export function AllPosts() {
                             <p className="text-sm font-semibold text-slate-700">
                                 Title:
                             </p>
-                            <p className="text-sm text-slate-600 bg-slate-50 p-3 rounded-lg border border-slate-200">
-                                {selectedPost?.title}
-                            </p>
+                            <Input
+                                value={editTitle}
+                                onChange={(e) => setEditTitle(e.target.value)}
+                                className="text-sm text-slate-600 bg-slate-50 p-3 rounded-lg border border-slate-200"
+                            />
                         </div>
                         <div className="space-y-2">
                             <p className="text-sm font-semibold text-slate-700">
                                 Description:
                             </p>
-                            <p className="text-sm text-slate-600 bg-slate-50 p-3 rounded-lg border border-slate-200 max-h-40 overflow-y-auto">
-                                {selectedPost?.description}
-                            </p>
+                            <Input
+                                value={editDescription}
+                                onChange={(e) =>
+                                    setEditDescription(e.target.value)
+                                }
+                                className="text-sm text-slate-600 bg-slate-50 p-3 rounded-lg border border-slate-200 max-h-40 overflow-y-auto"
+                            />
                         </div>
                         {selectedPost?.platforms &&
                             selectedPost.platforms.length > 0 && (
@@ -147,64 +206,9 @@ export function AllPosts() {
                     </div>
                     <DialogFooter>
                         <DialogClose asChild>
-                            <Button variant="outline">Close</Button>
+                            <Button variant="outline">Cancel</Button>
                         </DialogClose>
-                        <Button>Save Changes</Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
-
-            {/* Delete Dialog */}
-            <Dialog open={editDialog} onOpenChange={setEditDialog}>
-                <DialogContent className="sm:max-w-md">
-                    <DialogHeader>
-                        <DialogTitle className="text-xl font-semibold">
-                            Delete Post
-                        </DialogTitle>
-                    </DialogHeader>
-                    <div className="py-4 space-y-4">
-                        <div className="space-y-2">
-                            <p className="text-sm font-semibold text-slate-700">
-                                Title:
-                            </p>
-                            <p className="text-sm text-slate-600 bg-slate-50 p-3 rounded-lg border border-slate-200">
-                                {selectedPost?.title}
-                            </p>
-                        </div>
-                        <div className="space-y-2">
-                            <p className="text-sm font-semibold text-slate-700">
-                                Description:
-                            </p>
-                            <p className="text-sm text-slate-600 bg-slate-50 p-3 rounded-lg border border-slate-200 max-h-40 overflow-y-auto">
-                                {selectedPost?.description}
-                            </p>
-                        </div>
-                        {selectedPost?.platforms &&
-                            selectedPost.platforms.length > 0 && (
-                                <div className="space-y-2">
-                                    <p className="text-sm font-semibold text-slate-700">
-                                        Platforms:
-                                    </p>
-                                    <div className="flex flex-wrap gap-2">
-                                        {selectedPost.platforms.map(
-                                            (platform) => (
-                                                <span
-                                                    key={platform}
-                                                    className="text-xs font-medium bg-linear-to-r from-blue-500 to-purple-500 text-white px-3 py-1 rounded-full capitalize"
-                                                >
-                                                    {platform}
-                                                </span>
-                                            )
-                                        )}
-                                    </div>
-                                </div>
-                            )}
-                    </div>
-                    <DialogFooter>
-                        <DialogClose asChild>
-                            <Button variant="outline">Close</Button>
-                        </DialogClose>
-                        <Button>Save Changes</Button>
+                        <Button onClick={handleSaveEdit}>Save Changes</Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
@@ -249,27 +253,68 @@ export function AllPosts() {
                                                     className="h-8 w-8 hover:bg-blue-100 hover:text-blue-600"
                                                     onClick={() => {
                                                         setSelectedPost(post);
+                                                        setEditTitle(
+                                                            post.title
+                                                        );
+                                                        setEditDescription(
+                                                            post.description
+                                                        );
                                                         setEditDialog(true);
                                                     }}
                                                 >
-                                                    <Pencil className="h-4 w-4" />
+                                                    <PencilIcon className="h-4 w-4" />
                                                 </Button>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    className="h-8 w-8 hover:bg-red-100 hover:text-red-600"
-                                                    onClick={() =>
-                                                        handleDeletePost(
-                                                            post.id
-                                                        )
-                                                    }
-                                                >
-                                                    <Trash2 className="h-4 w-4" />
-                                                </Button>
+
+                                                <Dialog>
+                                                    <DialogTrigger asChild>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="h-8 w-8 hover:bg-red-100 hover:text-red-600"
+                                                        >
+                                                            <Trash2Icon className="h-4 w-4" />
+                                                        </Button>
+                                                    </DialogTrigger>
+                                                    <DialogContent className="sm:max-w-md">
+                                                        <DialogHeader>
+                                                            <DialogTitle className="text-xl font-semibold">
+                                                                Delete Post
+                                                            </DialogTitle>
+                                                            <DialogDescription>
+                                                                Are you
+                                                                absolutely sure?
+                                                                This action
+                                                                cannot be
+                                                                undone. This
+                                                                will permanently
+                                                                delete this post
+                                                                from our servers.
+                                                            </DialogDescription>
+                                                        </DialogHeader>
+                                                        <DialogFooter>
+                                                            <DialogClose
+                                                                asChild
+                                                            >
+                                                                <Button variant="outline">
+                                                                    No
+                                                                </Button>
+                                                            </DialogClose>
+                                                            <Button
+                                                                onClick={() =>
+                                                                    handleDeletePost(
+                                                                        post.id
+                                                                    )
+                                                                }
+                                                            >
+                                                                Yes
+                                                            </Button>
+                                                        </DialogFooter>
+                                                    </DialogContent>
+                                                </Dialog>
                                             </div>
                                         </div>
                                         <CardDescription className="flex items-center gap-1.5 text-xs text-slate-500 mt-2">
-                                            <Calendar className="w-3.5 h-3.5 text-purple-500" />
+                                            <Calendar className="size-4.5 text-purple-500" />
                                             {new Date(
                                                 post.publishedAt
                                             ).toLocaleDateString("en-US", {

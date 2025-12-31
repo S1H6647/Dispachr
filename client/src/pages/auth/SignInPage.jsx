@@ -26,29 +26,60 @@ export default function SignInPage() {
         console.log(e);
         setErrorMessage(""); // Clear previous errors
 
-        const response = await fetch("/api/auth/login", {
-            body: JSON.stringify(e),
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            // credentials: "include",
-        });
+        try {
+            const response = await fetch("/api/auth/login", {
+                body: JSON.stringify(e),
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                credentials: "include",
+            });
 
-        const resData = await response.json();
-        console.log(resData);
-        if (resData.status) {
-            clearAuth(); // Clear any stale cache
-            setAuth(resData.user); // Set new auth state
-            navigate("/dashboard", { replace: true });
-        } else {
-            setErrorMessage(
-                resData.message || "Login failed. Please try again."
-            );
+            // Try to parse JSON response
+            let resData;
+            const text = await response.text();
+            console.log("Raw response text:", text);
+            console.log("Response status:", response.status);
+            console.log("Response ok:", response.ok);
 
-            if (response.status === 401) {
-                setFocus("email");
+            try {
+                resData = text ? JSON.parse(text) : {};
+            } catch (parseError) {
+                console.error("JSON parse error:", parseError);
+                console.error("Response text that failed to parse:", text);
+                // If parsing fails, create a default error response
+                resData = {
+                    status: false,
+                    message:
+                        response.status === 401
+                            ? "Invalid email or password"
+                            : response.status >= 500
+                            ? "Server error. Please try again."
+                            : "Invalid response from server",
+                };
             }
+
+            console.log("Response data:", resData);
+
+            if (resData.status) {
+                clearAuth(); // Clear any stale cache
+                setAuth(resData.data); // Set new auth state (backend returns 'data', not 'user')
+                navigate("/dashboard", { replace: true });
+            } else {
+                setErrorMessage(
+                    resData.message || "Login failed. Please try again."
+                );
+
+                if (response.status === 401) {
+                    setFocus("email");
+                }
+            }
+        } catch (error) {
+            console.error("Login error:", error);
+            setErrorMessage(
+                "Network error. Please check your connection and try again."
+            );
         }
     };
 
@@ -171,14 +202,17 @@ export default function SignInPage() {
                         </div>
 
                         <div className="space-y-4">
-                            <Button type="submit" className="w-full">
+                            <Button
+                                type="submit"
+                                className="w-full cursor-pointer"
+                            >
                                 Sign In
                             </Button>
 
                             <Button
                                 type="button"
                                 variant="outline"
-                                className="w-full"
+                                className="w-full cursor-pointer"
                             >
                                 <img
                                     src={google}

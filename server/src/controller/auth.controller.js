@@ -13,7 +13,11 @@ const login = async (request, response) => {
         const { success, data, error } = loginValidator.safeParse(body);
 
         if (!success) {
-            return response.status(400).json({ error: JSON.parse(error) });
+            return response.status(400).json({
+                status: false,
+                message: "Validation failed",
+                error: error.errors,
+            });
         }
 
         const { email, password, isRemember } = data;
@@ -28,13 +32,15 @@ const login = async (request, response) => {
         if (!user) {
             return response
                 .status(401)
-                .json({ message: "The user doesn't exist!" });
+                .json({ status: false, message: "The user doesn't exist!" });
         }
 
         //` Validate password
         const isPasswordValid = await argon2.verify(user.password, password);
         if (!isPasswordValid) {
-            return response.status(401).json({ message: "Invalid password." });
+            return response
+                .status(401)
+                .json({ status: false, message: "Invalid password." });
         }
 
         const userData = { id: user.id, email: user.email };
@@ -62,6 +68,7 @@ const login = async (request, response) => {
     } catch (error) {
         console.error(`❌ Error in login controller. ${error}`);
         response.status(500).json({
+            status: false,
             message: error.message || "Failed to login ",
         });
     }
