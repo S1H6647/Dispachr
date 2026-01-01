@@ -122,7 +122,21 @@ export async function getMyDataService() {
  */
 export async function getUserTweetsService(userId) {
     try {
-        const data = await twitterRequest(`/users/${userId}/tweets`);
+        const bearerToken = process.env.TWITTER_BEARER_TOKEN;
+        const options = {
+            method: "GET",
+            headers: { Authorization: `Bearer ${bearerToken}` },
+        };
+
+        const response = await fetch(
+            `${BASE_URL}/users/${userId}/tweets`,
+            options
+        );
+        const data = await response.json();
+
+        console.log(data);
+
+        // const data = await twitterRequest(`/users/${userId}/tweets`);
 
         if (data.errors) {
             return { success: false, error: data.errors };

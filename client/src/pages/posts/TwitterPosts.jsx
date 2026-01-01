@@ -8,6 +8,7 @@ import {
 import { useEffect, useState } from "react";
 import { GlobeIcon, Loader2 } from "lucide-react";
 import { Header } from "@/components/sidebar/Header";
+import { Link } from "react-router-dom";
 
 export function TwitterPosts() {
     const [posts, setPosts] = useState([]);
@@ -44,9 +45,9 @@ export function TwitterPosts() {
     if (posts.length === 0) {
         return (
             <div className="flex items-center justify-center h-full w-full">
-                <p className="text-muted-foreground">
+                <Link to="/posts/" className="text-muted-foreground">
                     No posts yet. Create your first post!
-                </p>
+                </Link>
             </div>
         );
     }

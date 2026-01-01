@@ -6,7 +6,15 @@ import {
     CardTitle,
 } from "@/components/ui/card";
 import { useEffect, useState } from "react";
-import { Globe, Calendar, MessageSquare, Pencil, Trash2, PencilIcon, Trash2Icon } from "lucide-react";
+import {
+    Globe,
+    Calendar,
+    MessageSquare,
+    Pencil,
+    Trash2,
+    PencilIcon,
+    Trash2Icon,
+} from "lucide-react";
 import { Header } from "@/components/sidebar/Header";
 import { Button } from "@/components/ui/button";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
@@ -30,6 +38,7 @@ export function AllPosts() {
     const [loading, setLoading] = useState(true);
     const [editDialog, setEditDialog] = useState(false);
     const [selectedPost, setSelectedPost] = useState(null);
+    const [deletingPostId, setDeletingPostId] = useState(null);
     const [editTitle, setEditTitle] = useState("");
     const [editDescription, setEditDescription] = useState("");
 
@@ -73,23 +82,21 @@ export function AllPosts() {
 
     const handleDeletePost = async (id) => {
         try {
+            setDeletingPostId(id);
             const response = await fetch(`/api/posts/${id}`, {
                 method: "DELETE",
             });
-
             const data = await response.json();
-
-            // console.log(data);
             if (data.status) {
                 toast.success(data.message);
-
                 const filteredPosts = posts.filter((p) => p.id !== id);
-
                 setPosts(filteredPosts);
             } else {
                 toast.error(error.message);
             }
+            setDeletingPostId(null);
         } catch (error) {
+            setDeletingPostId(null);
             console.log(error);
         }
     };
@@ -106,12 +113,9 @@ export function AllPosts() {
                     description: editDescription,
                 }),
             });
-
             const data = await response.json();
-
             if (data.status) {
                 toast.success(data.message);
-                // Update the post in the state
                 setPosts(
                     posts.map((p) =>
                         p.id === selectedPost.id
@@ -124,6 +128,9 @@ export function AllPosts() {
                     )
                 );
                 setEditDialog(false);
+                setSelectedPost(null);
+                setEditTitle("");
+                setEditDescription("");
             } else {
                 toast.error("Failed to update post");
             }
@@ -206,9 +213,19 @@ export function AllPosts() {
                     </div>
                     <DialogFooter>
                         <DialogClose asChild>
-                            <Button variant="outline">Cancel</Button>
+                            <Button
+                                variant="outline"
+                                className="cursor-pointer"
+                            >
+                                Cancel
+                            </Button>
                         </DialogClose>
-                        <Button onClick={handleSaveEdit}>Save Changes</Button>
+                        <Button
+                            onClick={handleSaveEdit}
+                            className="cursor-pointer"
+                        >
+                            Save Changes
+                        </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
@@ -235,7 +252,7 @@ export function AllPosts() {
                             </p>
                         </div>
 
-                        <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                        <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
                             {posts.map((post) => (
                                 <Card
                                     key={post.id}
@@ -243,9 +260,9 @@ export function AllPosts() {
                                 >
                                     <CardHeader className="pb-3">
                                         <div className="flex items-start justify-between gap-2">
-                                            <CardTitle className="line-clamp-2 text-lg font-semibold text-slate-800 flex-1">
+                                            <span className="line-clamp-2 text-lg font-semibold text-slate-800 flex-1">
                                                 {post.title}
-                                            </CardTitle>
+                                            </span>
                                             <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                                                 <Button
                                                     variant="ghost"
@@ -264,13 +281,26 @@ export function AllPosts() {
                                                 >
                                                     <PencilIcon className="h-4 w-4" />
                                                 </Button>
-
-                                                <Dialog>
+                                                <Dialog
+                                                    open={
+                                                        deletingPostId ===
+                                                        post.id
+                                                    }
+                                                    onOpenChange={(open) =>
+                                                        !open &&
+                                                        setDeletingPostId(null)
+                                                    }
+                                                >
                                                     <DialogTrigger asChild>
                                                         <Button
                                                             variant="ghost"
                                                             size="icon"
                                                             className="h-8 w-8 hover:bg-red-100 hover:text-red-600"
+                                                            onClick={() =>
+                                                                setDeletingPostId(
+                                                                    post.id
+                                                                )
+                                                            }
                                                         >
                                                             <Trash2Icon className="h-4 w-4" />
                                                         </Button>
@@ -288,14 +318,18 @@ export function AllPosts() {
                                                                 undone. This
                                                                 will permanently
                                                                 delete this post
-                                                                from our servers.
+                                                                from our
+                                                                servers.
                                                             </DialogDescription>
                                                         </DialogHeader>
                                                         <DialogFooter>
                                                             <DialogClose
                                                                 asChild
                                                             >
-                                                                <Button variant="outline">
+                                                                <Button
+                                                                    variant="outline"
+                                                                    className="cursor-pointer"
+                                                                >
                                                                     No
                                                                 </Button>
                                                             </DialogClose>
@@ -305,6 +339,7 @@ export function AllPosts() {
                                                                         post.id
                                                                     )
                                                                 }
+                                                                className="cursor-pointer"
                                                             >
                                                                 Yes
                                                             </Button>
@@ -324,7 +359,6 @@ export function AllPosts() {
                                             })}
                                         </CardDescription>
                                     </CardHeader>
-
                                     <CardContent className="space-y-3 pt-0 pb-4">
                                         <p className="text-sm text-slate-600 line-clamp-4 leading-relaxed">
                                             {post.description}

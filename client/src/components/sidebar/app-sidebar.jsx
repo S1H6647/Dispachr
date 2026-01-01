@@ -82,7 +82,7 @@ export function AppSidebar({ ...props }) {
                 });
 
                 const userData = await response.json();
-                console.log(userData);
+                // console.log(userData);
                 if (userData.status && userData.user) {
                     setUser({
                         name: userData.user.fullName,

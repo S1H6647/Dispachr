@@ -1,6 +1,7 @@
 import postSchema from "../schema/post.schema.js";
 import {
     createTweetService,
+    getMyDataService,
     getUserTweetsService,
 } from "../services/twitter.service.js";
 import {
@@ -10,8 +11,6 @@ import {
     updateFacebookPost,
 } from "../services/facebook.service.js";
 import { caplitalizeFirstWord } from "../utils/user.caplitalize.js";
-import { request } from "http";
-import { response } from "express";
 
 const getAllPosts = async (_, response) => {
     try {
@@ -27,14 +26,20 @@ const getAllPosts = async (_, response) => {
     }
 };
 
-const getTwiiterPosts = async (_, response) => {
+const getTwitterPosts = async (_, response) => {
     const userid = "1940761508780429316";
     try {
-        const posts = await getUserTweetsService(userid);
+        const myData = await getMyDataService();
+
+        console.log(myData);
+
+        const userId = myData.data.id;
+
+        const posts = await getUserTweetsService(userId);
         response.status(200).json(posts);
         console.log(posts);
     } catch (error) {
-        console.error(`❌ Error in getTwiiterPosts controller. ${error}`);
+        console.error(`❌ Error in getTwitterPosts controller. ${error}`);
         response
             .status(500)
             .json({ message: "Failed to fetch Twitter posts." });
@@ -322,7 +327,7 @@ const dispatchPost = async (request, response) => {
 
 export {
     getAllPosts,
-    getTwiiterPosts,
+    getTwitterPosts,
     getFacebookPosts,
     getPostById,
     createPost,

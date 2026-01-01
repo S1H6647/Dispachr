@@ -9,7 +9,7 @@ import {
     getAllPosts,
     getFacebookPosts,
     getPostById,
-    getTwiiterPosts,
+    getTwitterPosts,
 } from "../controller/post.controller.js";
 import { validatePlatform } from "../middleware/validatePlatform.js";
 
@@ -17,7 +17,7 @@ const router = Router();
 
 // Getters
 router.get("/", getAllPosts);
-router.get("/twitter", getTwiiterPosts);
+router.get("/twitter", getTwitterPosts);
 router.get("/facebook", getFacebookPosts);
 router.get("/:id", getPostById);
 

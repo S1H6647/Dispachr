@@ -244,11 +244,17 @@ export function FacebookPosts() {
                     </div>
                     <DialogFooter>
                         <DialogClose asChild>
-                            <Button variant="outline">Close</Button>
+                            <Button
+                                variant="outline"
+                                className="cursor-pointer"
+                            >
+                                Cancel
+                            </Button>
                         </DialogClose>
                         <Button
                             onClick={() => handleSaveEdit(selectedPost.id)}
                             disabled={isUpdating || !selectedPost}
+                            className="cursor-pointer"
                         >
                             {isUpdating ? "Updating..." : "Save Changes"}
                         </Button>
@@ -279,14 +285,126 @@ export function FacebookPosts() {
                         </div>
 
                         <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-                            {posts.map((post) => (
-                                <Card
-                                    key={post.id}
-                                    className="group relative overflow-hidden rounded-xl border border-slate-200 bg-white/90 backdrop-blur-sm shadow-md hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 hover:border-purple-300"
-                                >
-                                    <CardHeader className="space-y-3">
-                                        <CardDescription className="flex items-center justify-between gap-2 text-xs">
-                                            <div className="flex gap-2 min-h-9">
+                            {posts.map((post) => {
+                                const messageParts = post.message
+                                    ? post.message.split("\n\n")
+                                    : ["", ""];
+                                const title = messageParts[0] || "";
+                                const description =
+                                    messageParts.slice(1).join("\n\n") || "";
+                                return (
+                                    <Card
+                                        key={post.id}
+                                        className="group relative overflow-hidden rounded-xl border border-slate-200 bg-white/90 backdrop-blur-sm shadow-md hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 hover:border-purple-300"
+                                    >
+                                        <CardHeader className="pb-3">
+                                            <div className="flex items-start justify-between gap-2">
+                                                <span className="line-clamp-2 text-lg font-semibold text-slate-800 flex-1">
+                                                    {title}
+                                                </span>
+                                                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-8 w-8 hover:bg-blue-100 hover:text-blue-600"
+                                                        onClick={() => {
+                                                            setSelectedPost(
+                                                                post
+                                                            );
+                                                            const messageParts =
+                                                                post.message
+                                                                    ? post.message.split(
+                                                                          "\n\n"
+                                                                      )
+                                                                    : ["", ""];
+                                                            setEditTitle(
+                                                                messageParts[0] ||
+                                                                    ""
+                                                            );
+                                                            setEditDescription(
+                                                                messageParts
+                                                                    .slice(1)
+                                                                    .join(
+                                                                        "\n\n"
+                                                                    ) || ""
+                                                            );
+                                                            setEditDialog(true);
+                                                        }}
+                                                    >
+                                                        <PencilIcon className="h-4 w-4" />
+                                                    </Button>
+                                                    <Dialog
+                                                        open={
+                                                            deletingPostId ===
+                                                            post.id
+                                                        }
+                                                        onOpenChange={(open) =>
+                                                            !open &&
+                                                            setDeletingPostId(
+                                                                null
+                                                            )
+                                                        }
+                                                    >
+                                                        <DialogTrigger asChild>
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                className="h-8 w-8 hover:bg-red-100 hover:text-red-600"
+                                                                onClick={() =>
+                                                                    setDeletingPostId(
+                                                                        post.id
+                                                                    )
+                                                                }
+                                                            >
+                                                                <Trash2Icon className="h-4 w-4" />
+                                                            </Button>
+                                                        </DialogTrigger>
+                                                        <DialogContent className="sm:max-w-md">
+                                                            <DialogHeader>
+                                                                <DialogTitle className="text-xl font-semibold">
+                                                                    Delete Post
+                                                                </DialogTitle>
+                                                                <DialogDescription>
+                                                                    Are you
+                                                                    absolutely
+                                                                    sure? This
+                                                                    action
+                                                                    cannot be
+                                                                    undone. This
+                                                                    will
+                                                                    permanently
+                                                                    delete this
+                                                                    post from
+                                                                    our servers.
+                                                                </DialogDescription>
+                                                            </DialogHeader>
+                                                            <DialogFooter>
+                                                                <DialogClose
+                                                                    asChild
+                                                                >
+                                                                    <Button
+                                                                        variant="outline"
+                                                                        className="cursor-pointer"
+                                                                    >
+                                                                        No
+                                                                    </Button>
+                                                                </DialogClose>
+                                                                <Button
+                                                                    onClick={() =>
+                                                                        handleDeletePost(
+                                                                            post.id
+                                                                        )
+                                                                    }
+                                                                    className="cursor-pointer"
+                                                                >
+                                                                    Yes
+                                                                </Button>
+                                                            </DialogFooter>
+                                                        </DialogContent>
+                                                    </Dialog>
+                                                </div>
+                                            </div>
+                                            <CardDescription className="flex items-center gap-1.5 text-xs text-slate-500 mt-2">
                                                 <Calendar className="size-4.5 text-purple-500" />
                                                 {new Date(
                                                     post.created_time
@@ -295,123 +413,33 @@ export function FacebookPosts() {
                                                     month: "short",
                                                     day: "numeric",
                                                 })}
-                                            </div>
-
-                                            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    className="h-8 w-8 hover:bg-blue-100 hover:text-blue-600"
-                                                    onClick={() => {
-                                                        setSelectedPost(post);
-                                                        // Parse the message to extract title and description
-                                                        // Facebook posts have message field, format: "title\n\ndescription"
-                                                        const messageParts =
-                                                            post.message
-                                                                ? post.message.split(
-                                                                      "\n\n"
-                                                                  )
-                                                                : ["", ""];
-                                                        setEditTitle(
-                                                            messageParts[0] ||
-                                                                ""
-                                                        );
-                                                        setEditDescription(
-                                                            messageParts
-                                                                .slice(1)
-                                                                .join("\n\n") ||
-                                                                ""
-                                                        );
-                                                        setEditDialog(true);
-                                                    }}
-                                                >
-                                                    <PencilIcon className="h-4 w-4" />
-                                                </Button>
-                                                <Dialog
-                                                    open={
-                                                        deletingPostId ===
-                                                        post.id
-                                                    }
-                                                    onOpenChange={(open) =>
-                                                        !open &&
-                                                        setDeletingPostId(null)
-                                                    }
-                                                >
-                                                    <DialogTrigger asChild>
-                                                        <Button
-                                                            variant="ghost"
-                                                            size="icon"
-                                                            className="h-8 w-8 hover:bg-red-100 hover:text-red-600"
-                                                            onClick={() =>
-                                                                setDeletingPostId(
-                                                                    post.id
-                                                                )
-                                                            }
-                                                        >
-                                                            <Trash2Icon className="h-4 w-4" />
-                                                        </Button>
-                                                    </DialogTrigger>
-                                                    <DialogContent className="sm:max-w-md">
-                                                        <DialogHeader>
-                                                            <DialogTitle className="text-xl font-semibold">
-                                                                Delete Post
-                                                            </DialogTitle>
-                                                            <DialogDescription>
-                                                                Are you
-                                                                absolutely sure?
-                                                                This action
-                                                                cannot be
-                                                                undone. This
-                                                                will permanently
-                                                                delete this post
-                                                                from our servers.
-                                                            </DialogDescription>
-                                                        </DialogHeader>
-                                                        <DialogFooter>
-                                                            <DialogClose
-                                                                asChild
-                                                            >
-                                                                <Button variant="outline">
-                                                                    No
-                                                                </Button>
-                                                            </DialogClose>
-                                                            <Button
-                                                                onClick={() =>
-                                                                    handleDeletePost(
-                                                                        post.id
-                                                                    )
-                                                                }
-                                                            >
-                                                                Yes
-                                                            </Button>
-                                                        </DialogFooter>
-                                                    </DialogContent>
-                                                </Dialog>
-                                            </div>
-                                        </CardDescription>
-                                    </CardHeader>
-                                    <CardContent className="space-y-4">
-                                        <p className="text-base text-gray-900 line-clamp-4 leading-relaxed">
-                                            {post.message}
-                                        </p>
-                                        {post.platforms &&
-                                            post.platforms.length > 0 && (
-                                                <div className="flex flex-wrap gap-2 pt-2 border-t border-slate-100">
-                                                    {post.platforms.map(
-                                                        (platform) => (
-                                                            <span
-                                                                key={platform}
-                                                                className="text-xs font-medium bg-linear-to-r from-blue-500 to-blue-600 text-white px-3 py-1 rounded-full capitalize shadow-sm"
-                                                            >
-                                                                {platform}
-                                                            </span>
-                                                        )
-                                                    )}
-                                                </div>
-                                            )}
-                                    </CardContent>
-                                </Card>
-                            ))}
+                                            </CardDescription>
+                                        </CardHeader>
+                                        <CardContent className="space-y-3 pt-0 pb-4">
+                                            <p className="text-sm text-slate-600 line-clamp-4 leading-relaxed">
+                                                {description}
+                                            </p>
+                                            {post.platforms &&
+                                                post.platforms.length > 0 && (
+                                                    <div className="flex flex-wrap gap-2 pt-3 border-t border-slate-100">
+                                                        {post.platforms.map(
+                                                            (platform) => (
+                                                                <span
+                                                                    key={
+                                                                        platform
+                                                                    }
+                                                                    className="text-xs font-medium bg-linear-to-r from-blue-500 to-purple-500 text-white px-3 py-1 rounded-full capitalize shadow-sm"
+                                                                >
+                                                                    {platform}
+                                                                </span>
+                                                            )
+                                                        )}
+                                                    </div>
+                                                )}
+                                        </CardContent>
+                                    </Card>
+                                );
+                            })}
                         </div>
                     </div>
                 </div>

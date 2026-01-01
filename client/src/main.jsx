@@ -5,10 +5,8 @@ import "./main.css";
 import { CookiesProvider } from "react-cookie";
 
 createRoot(document.getElementById("root")).render(
-    <StrictMode>
-        <CookiesProvider defaultSetOptions={{ path: "/" }}>
-            <App />
-        </CookiesProvider>
-    </StrictMode>
+    <CookiesProvider defaultSetOptions={{ path: "/" }}>
+        <App />
+    </CookiesProvider>
 );
 
