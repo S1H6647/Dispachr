@@ -9,6 +9,7 @@ import {
     getAllPosts,
     getFacebookPosts,
     getPostById,
+    getPostChart,
     getTwitterPosts,
 } from "../controller/post.controller.js";
 import { validatePlatform } from "../middleware/validatePlatform.js";
@@ -19,6 +20,7 @@ const router = Router();
 router.get("/", getAllPosts);
 router.get("/twitter", getTwitterPosts);
 router.get("/facebook", getFacebookPosts);
+router.get("/chart", getPostChart);
 router.get("/:id", getPostById);
 
 //Deleting posts

@@ -175,7 +175,6 @@ export function FacebookPosts() {
         <div className="min-h-screen flex flex-col w-full bg-linear-to-br from-slate-50 via-blue-50 to-slate-100">
             {/* Header */}
             <Header title="Facebook Posts" icon={<FacebookIcon />} />
-            <Toaster />
 
             {/* Edit Dialog */}
             <Dialog

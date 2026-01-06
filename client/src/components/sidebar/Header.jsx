@@ -4,8 +4,8 @@ import pfp from "../../assets/logo.webp";
 export function Header({
     title,
     icon,
-    isSubheader = false,
-    isDashboard = false,
+    subHeader = "",
+    profilePicture = false,
 }) {
     return (
         <>
@@ -23,15 +23,15 @@ export function Header({
                                 <h1 className="text-xl font-semibold">
                                     {title}
                                 </h1>
-                                {isSubheader && (
+                                {subHeader && (
                                     <p className="text-sm text-gray-500">
-                                        Welcome back. Here's your post overview.
+                                        {subHeader}
                                     </p>
                                 )}
                             </div>
                         </div>
                     </div>
-                    {isDashboard && (
+                    {profilePicture && (
                         <div>
                             <img
                                 src={pfp}

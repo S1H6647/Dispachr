@@ -8,9 +8,11 @@ import { lazy } from "react";
 import { AllPosts } from "./pages/posts/AllPosts";
 import { TwitterPosts } from "./pages/posts/TwitterPosts";
 import { FacebookPosts } from "./pages/posts/FacebookPosts";
+import SettingPage from "./pages/settings/SettingPage";
+import GetHelp from "./pages/help/GetHelp";
 
 const Dashboard = lazy(() => import("./pages/dashboard/Dashboard"));
-const Posts = lazy(() => import("./pages/posts/Posts"));
+const CreatePosts = lazy(() => import("./pages/posts/CreatePosts"));
 
 export default function App() {
     return (
@@ -35,7 +37,7 @@ export default function App() {
                             path="/dashboard"
                             element={<Dashboard />}
                         ></Route>
-                        <Route path="/posts" element={<Posts />}></Route>
+                        <Route path="/posts" element={<CreatePosts />}></Route>
                         <Route path="/all-posts" element={<AllPosts />}></Route>
                         <Route
                             path="/all-posts/twitter"
@@ -45,6 +47,11 @@ export default function App() {
                             path="/all-posts/facebook"
                             element={<FacebookPosts />}
                         ></Route>
+                        <Route
+                            path="/settings"
+                            element={<SettingPage />}
+                        ></Route>
+                        <Route path="/help" element={<GetHelp />}></Route>
                     </Route>
 
                     <Route path="*" element={<ErrorPage />} />

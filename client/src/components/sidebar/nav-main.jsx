@@ -17,7 +17,7 @@ import { Link, useLocation } from "react-router-dom";
 import { ChevronRight, FileText } from "lucide-react";
 
 export function NavMain({ items }) {
-    let location = useLocation();
+    const location = useLocation();
     return (
         <SidebarGroup>
             <SidebarGroupContent className="flex flex-col gap-2">

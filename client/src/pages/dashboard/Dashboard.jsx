@@ -10,59 +10,35 @@ import { HouseIcon } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { ChartSkeleton } from "@/components/ui/chart-skeleton";
 
-function getLast7Days() {
-    const days = [];
-    const today = new Date();
-    for (let i = 6; i >= 0; i--) {
-        const d = new Date(today);
-        d.setDate(today.getDate() - i);
-        days.push(d);
-    }
-    return days;
-}
-
-function formatDay(d) {
-    return d.toLocaleDateString(undefined, {
-        weekday: "short",
-        month: "short",
-        day: "numeric",
-    });
-}
-
 export default function Dashboard() {
-    const [posts, setPosts] = useState([]);
     const [weeklyCounts, setWeeklyCounts] = useState([]);
+    const [recentWebsitePosts, setRecentWebsitePosts] = useState([]);
+    const [recentFacebookPosts, setRecentFacebookPosts] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [postsLoading, setPostsLoading] = useState(true);
 
     useEffect(() => {
-        const fetchPosts = async () => {
+        const fetchChartData = async () => {
             try {
-                const res = await fetch("/api/posts");
-                if (!res.ok) throw new Error("Failed to fetch posts");
-                const data = await res.json();
-                // `data` shape from server: { data: posts, message }
-                const all = data?.data || [];
-                setPosts(all);
+                const res = await fetch("/api/posts/chart");
+                if (!res.ok) throw new Error("Failed to fetch chart data");
+                const response = await res.json();
 
-                // compute last 7 days counts
-                const days = getLast7Days();
-                const counts = days.map((day) => {
-                    const start = new Date(day);
-                    start.setHours(0, 0, 0, 0);
-                    const end = new Date(day);
-                    end.setHours(23, 59, 59, 999);
+                // response.data contains array like: [{ day: "2026-01-06", website: 2, facebook: 1 }, ...]
+                const chartData = response?.data || [];
 
-                    const count = all.filter((p) => {
-                        const created = p.createdAt
-                            ? new Date(p.createdAt)
-                            : null;
-                        return created && created >= start && created <= end;
-                    }).length;
+                // Format the data for display
+                const formattedData = chartData.map((item) => ({
+                    day: new Date(item.day).toLocaleDateString(undefined, {
+                        weekday: "short",
+                        month: "short",
+                        day: "numeric",
+                    }),
+                    website: item.website,
+                    facebook: item.facebook,
+                }));
 
-                    return { day: formatDay(day), count };
-                });
-
-                setWeeklyCounts(counts);
+                setWeeklyCounts(formattedData);
             } catch (err) {
                 console.error(err);
             } finally {
@@ -70,19 +46,44 @@ export default function Dashboard() {
             }
         };
 
-        fetchPosts();
-    }, []);
+        const fetchRecentPosts = async () => {
+            try {
+                // Fetch website posts
+                const websiteRes = await fetch("/api/posts");
+                if (websiteRes.ok) {
+                    const websiteData = await websiteRes.json();
+                    const posts = websiteData?.data || [];
+                    // Get the 5 most recent posts
+                    setRecentWebsitePosts(posts.slice(0, 3));
+                }
 
-    const totalThisWeek = weeklyCounts.reduce((s, d) => s + d.count, 0);
+                // Fetch Facebook posts
+                const facebookRes = await fetch("/api/posts/facebook");
+                if (facebookRes.ok) {
+                    const facebookData = await facebookRes.json();
+                    const posts = facebookData?.data || [];
+                    // Get the 5 most recent posts
+                    setRecentFacebookPosts(posts.slice(0, 3));
+                }
+            } catch (err) {
+                console.error(err);
+            } finally {
+                setPostsLoading(false);
+            }
+        };
+
+        fetchChartData();
+        fetchRecentPosts();
+    }, []);
 
     return (
         <>
-            <div className="w-full">
+            <div className="h-full flex flex-col w-full bg-linear-to-br from-slate-50 via-purple-50 to-slate-100">
                 <Header
                     title="Dashboard"
                     icon={<HouseIcon />}
-                    isSubheader
-                    isDashboard
+                    subHeader = "Welcome back. Here's your post overview."
+                    profilePicture
                 />
 
                 <section className="mt-6 px-10">
@@ -102,27 +103,31 @@ export default function Dashboard() {
                                 </p>
                             </div> */}
 
-                            <div className="p-4 border rounded">
-                                <p className="font-bold text-2xl">Post Chart</p>
+                            <div className="p-4 border rounded-lg bg-white">
+                                <p className="font-bold text-2xl">
+                                    Posts Chart
+                                </p>
                                 <p className="text-sm text-muted-foreground pb-3.5">
-                                    Chart showing posts per day for last 7 days
+                                    Chart showing website and Facebook posts per
+                                    day
                                 </p>
                                 <div className="mt-2">
                                     {/* Area chart showing posts per day for last 7 days */}
                                     <ChartContainer
                                         className="h-100 w-full"
                                         config={{
-                                            posts: {
-                                                label: "Posts",
+                                            website: {
+                                                label: "Website Posts",
                                                 color: "var(--chart-1)",
+                                            },
+                                            facebook: {
+                                                label: "Facebook Posts",
+                                                color: "var(--chart-2)",
                                             },
                                         }}
                                     >
                                         <AreaChart
-                                            data={weeklyCounts.map((d) => ({
-                                                day: d.day,
-                                                posts: d.count,
-                                            }))}
+                                            data={weeklyCounts}
                                             margin={{ left: 0, right: 0 }}
                                         >
                                             <CartesianGrid
@@ -141,7 +146,7 @@ export default function Dashboard() {
                                             />
                                             <defs>
                                                 <linearGradient
-                                                    id="gradPosts"
+                                                    id="gradWebsite"
                                                     x1="0"
                                                     y1="0"
                                                     x2="0"
@@ -149,24 +154,158 @@ export default function Dashboard() {
                                                 >
                                                     <stop
                                                         offset="5%"
-                                                        stopColor="var(--color-posts)"
+                                                        stopColor="var(--color-website)"
                                                         stopOpacity={0.8}
                                                     />
                                                     <stop
                                                         offset="95%"
-                                                        stopColor="var(--color-posts)"
+                                                        stopColor="var(--color-website)"
+                                                        stopOpacity={0.1}
+                                                    />
+                                                </linearGradient>
+                                                <linearGradient
+                                                    id="gradFacebook"
+                                                    x1="0"
+                                                    y1="0"
+                                                    x2="0"
+                                                    y2="1"
+                                                >
+                                                    <stop
+                                                        offset="5%"
+                                                        stopColor="var(--color-facebook)"
+                                                        stopOpacity={0.8}
+                                                    />
+                                                    <stop
+                                                        offset="95%"
+                                                        stopColor="var(--color-facebook)"
                                                         stopOpacity={0.1}
                                                     />
                                                 </linearGradient>
                                             </defs>
                                             <Area
                                                 type="monotone"
-                                                dataKey="posts"
-                                                stroke="var(--color-posts)"
-                                                fill="url(#gradPosts)"
+                                                dataKey="website"
+                                                stroke="var(--color-website)"
+                                                fill="url(#gradWebsite)"
+                                            />
+                                            <Area
+                                                type="monotone"
+                                                dataKey="facebook"
+                                                stroke="var(--color-facebook)"
+                                                fill="url(#gradFacebook)"
                                             />
                                         </AreaChart>
                                     </ChartContainer>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </section>
+
+                {/* Recent Posts Section */}
+                <section className="mt-8 px-10 pb-10 ">
+                    <h3 className="text-lg font-semibold mb-5">Recent Posts</h3>
+
+                    {postsLoading ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <Skeleton className="h-64 w-full" />
+                            <Skeleton className="h-64 w-full" />
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {/* Website Posts */}
+                            <div className="bg-white border rounded-lg p-5">
+                                <div className="flex items-center gap-2 mb-4">
+                                    <div className="w-3 h-3 rounded-full bg-chart-1"></div>
+                                    <h4 className="font-bold text-xl">
+                                        Website Posts
+                                    </h4>
+                                </div>
+
+                                <div className="space-y-3">
+                                    {recentWebsitePosts.length > 0 ? (
+                                        recentWebsitePosts.map((post) => (
+                                            <div
+                                                key={post.id}
+                                                className="p-3 border rounded-md hover:bg-slate-50 transition-colors"
+                                            >
+                                                <h5 className="font-semibold text-sm mb-1">
+                                                    {post.title}
+                                                </h5>
+                                                <p className="text-xs text-muted-foreground line-clamp-2 mb-2">
+                                                    {post.description}
+                                                </p>
+                                                <p className="text-xs text-muted-foreground">
+                                                    {new Date(
+                                                        post.createdAt
+                                                    ).toLocaleDateString(
+                                                        undefined,
+                                                        {
+                                                            month: "short",
+                                                            day: "numeric",
+                                                            year: "numeric",
+                                                            hour: "2-digit",
+                                                            minute: "2-digit",
+                                                        }
+                                                    )}
+                                                </p>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <p className="text-sm text-muted-foreground text-center py-8">
+                                            No website posts yet
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Facebook Posts */}
+                            <div className="bg-white border rounded-lg p-5">
+                                <div className="flex items-center gap-2 mb-4">
+                                    <div className="w-3 h-3 rounded-full bg-chart-2"></div>
+                                    <h4 className="font-bold text-xl">
+                                        Facebook Posts
+                                    </h4>
+                                </div>
+
+                                <div className="space-y-3">
+                                    {recentFacebookPosts.length > 0 ? (
+                                        recentFacebookPosts.map((post) => (
+                                            <div
+                                                key={post.id}
+                                                className="p-3 border rounded-md hover:bg-slate-50 transition-colors"
+                                            >
+                                                <h5 className="font-semibold text-sm mb-1">
+                                                    {post.message.split(
+                                                        "\n\n"
+                                                    )[0] || ""}
+                                                </h5>
+                                                <p className="text-xs text-muted-foreground line-clamp-2 mb-2">
+                                                    {post.message.split(
+                                                        "\n\n"
+                                                    )[1] || ""}
+                                                </p>
+                                                <p className="text-xs text-muted-foreground">
+                                                    {new Date(
+                                                        post.created_time
+                                                    ).toLocaleDateString(
+                                                        undefined,
+                                                        {
+                                                            month: "short",
+                                                            day: "numeric",
+                                                            year: "numeric",
+                                                            hour: "2-digit",
+                                                            minute: "2-digit",
+                                                        }
+                                                    )}
+                                                </p>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <p className="text-sm text-muted-foreground text-center py-8">
+                                            No Facebook posts yet
+                                        </p>
+                                    )}
                                 </div>
                             </div>
                         </div>

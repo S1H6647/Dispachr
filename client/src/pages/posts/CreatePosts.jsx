@@ -24,6 +24,7 @@ import {
     Send,
     FileText,
     Loader2,
+    FileTextIcon,
 } from "lucide-react";
 import {
     Card,
@@ -32,9 +33,10 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
+import { Header } from "@/components/sidebar/Header";
 
-export default function Posts() {
+export default function CreatePosts() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [inputValue, setInputValue] = useState("");
     const maxLength = 255;
@@ -85,7 +87,6 @@ export default function Posts() {
 
             if (response.ok) {
                 form.reset();
-                setInputValue("");
                 toast.success(resData.message, {});
             } else {
                 toast.error(resData.message || "Failed to create post");
@@ -98,24 +99,20 @@ export default function Posts() {
         }
     };
 
-    const characterCount = inputValue.length;
+    const descriptionValue = form.watch("description") || "";
+    const titleValue = form.watch("title") || "";
+    const characterCount = descriptionValue.length;
     const isNearLimit = characterCount > maxLength * 0.8;
     const isAtLimit = characterCount >= maxLength;
 
     return (
         <div className="min-h-screen w-full bg-linear-to-br from-slate-50 to-slate-100">
             {/* Header */}
-            <header className="sticky top-0 z-10 bg-white/80 backdrop-blur-sm border-b">
-                <div className="flex items-center gap-4 px-6 py-4">
-                    <SidebarTrigger className="-ml-2" />
-                    <div className="flex items-center gap-3">
-                        <div className="p-2 bg-primary/10 rounded-lg">
-                            <FileText className="h-5 w-5 text-primary" />
-                        </div>
-                        <h1 className="text-xl font-semibold">Create Post</h1>
-                    </div>
-                </div>
-            </header>
+            <Header
+                title="Create Post"
+                icon={<FileTextIcon />}
+                subHeader="Share your thoughts with the community"
+            />
 
             {/* Main Content */}
             <main className="flex items-center justify-center min-h-[calc(100vh-73px)] p-6">
@@ -149,6 +146,7 @@ export default function Posts() {
                                                     placeholder="Give your post a catchy title..."
                                                     className="h-12 text-base"
                                                     {...field}
+                                                    value={titleValue}
                                                 />
                                             </FormControl>
                                             <FormMessage />
@@ -171,15 +169,7 @@ export default function Posts() {
                                                     className="min-h-[200px] text-base resize-none"
                                                     maxLength={maxLength}
                                                     {...field}
-                                                    value={inputValue}
-                                                    onChange={(e) => {
-                                                        field.onChange(
-                                                            e.target.value
-                                                        );
-                                                        setInputValue(
-                                                            e.target.value
-                                                        );
-                                                    }}
+                                                    value={descriptionValue}
                                                 />
                                             </FormControl>
                                             <div className="flex justify-end">
@@ -304,7 +294,6 @@ export default function Posts() {
                                         </>
                                     )}
                                 </Button>
-                                <Toaster />
                             </form>
                         </Form>
                     </CardContent>

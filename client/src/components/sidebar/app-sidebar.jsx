@@ -56,12 +56,12 @@ const data = {
     navSecondary: [
         {
             title: "Settings",
-            url: "#",
+            url: "/settings",
             icon: Settings,
         },
         {
             title: "Get Help",
-            url: "#",
+            url: "/help",
             icon: CircleQuestionMark,
         },
     ],
@@ -105,10 +105,11 @@ export function AppSidebar({ ...props }) {
                             className="data-[slot=sidebar-menu-button]:p-1.5!"
                         >
                             <a href="#">
-                                <div className="flex items-center justify-center size-6 rounded bg-primary shrink-0">
-                                    <span className="text-primary-foreground font-bold text-sm">
-                                        D
-                                    </span>
+                                <div className="flex items-center justify-center size-6 rounded shrink-0">
+                                    <img
+                                        src="/dispachr-favicon.png"
+                                        alt="Dispachr"
+                                    />
                                 </div>
                                 <span className="text-base font-semibold">
                                     Dispachr

@@ -27,7 +27,6 @@ const signUpValidator = z
                 message:
                     "Password must include at least one special character.",
             })
-
             .regex(/^(?=.*\d)/, {
                 error: "Password must include at least one number.",
             }),

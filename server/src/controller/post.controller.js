@@ -325,6 +325,94 @@ const dispatchPost = async (request, response) => {
     }
 };
 
+const getPostChart = async (request, response) => {
+    try {
+        const websitePosts = await postSchema.findAll();
+        const facebookPostsResponse = await getFacebookPost();
+        const facebookPosts = facebookPostsResponse?.data || [];
+
+        // Create a map to store counts by date
+        const dateMap = new Map();
+
+        // Helper function to format date to YYYY-MM-DD
+        const formatDate = (dateString) => {
+            const date = new Date(dateString);
+            return date.toISOString().split("T")[0]; // Returns YYYY-MM-DD
+        };
+
+        // Helper function to get last N days
+        const getLastNDays = (n) => {
+            const days = [];
+            const today = new Date();
+            for (let i = n - 1; i >= 0; i--) {
+                const date = new Date(today);
+                date.setDate(today.getDate() - i);
+                days.push(formatDate(date));
+            }
+            return days;
+        };
+
+        // Initialize all days in the last 30 days with 0 counts
+        const last30Days = getLastNDays(7);
+        last30Days.forEach((day) => {
+            dateMap.set(day, {
+                day: day,
+                website: 0,
+                facebook: 0,
+            });
+        });
+
+        // Process website posts
+        websitePosts.forEach((post) => {
+            if (post.createdAt) {
+                const dateKey = formatDate(post.createdAt);
+                if (!dateMap.has(dateKey)) {
+                    dateMap.set(dateKey, {
+                        day: dateKey,
+                        website: 0,
+                        facebook: 0,
+                    });
+                }
+                dateMap.get(dateKey).website += 1;
+            }
+        });
+
+        // Process Facebook posts
+        facebookPosts.forEach((post) => {
+            if (post.created_time) {
+                const dateKey = formatDate(post.created_time);
+                if (!dateMap.has(dateKey)) {
+                    dateMap.set(dateKey, {
+                        day: dateKey,
+                        website: 0,
+                        facebook: 0,
+                    });
+                }
+                dateMap.get(dateKey).facebook += 1;
+            }
+        });
+
+        // Convert map to array and sort by date
+        const chartData = Array.from(dateMap.values()).sort(
+            (a, b) => new Date(a.day) - new Date(b.day)
+        );
+
+        response.status(200).json({
+            success: true,
+            data: chartData,
+            message: "Chart data successfully fetched",
+        });
+
+        console.log("✅ Chart data successfully processed");
+    } catch (error) {
+        console.error(`❌ Error in getPostChart controller: ${error}`);
+        response.status(500).json({
+            success: false,
+            error: error.message,
+        });
+    }
+};
+
 export {
     getAllPosts,
     getTwitterPosts,
@@ -336,4 +424,5 @@ export {
     editFacebookPostById,
     dispatchPost,
     deleteFacebookPosts,
+    getPostChart,
 };

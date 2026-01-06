@@ -1,7 +1,7 @@
-import { email } from "zod";
 import userSchema from "../schema/user.schema.js";
 import argon2 from "argon2";
 import { caplitalizeEachWord } from "../utils/user.caplitalize.js";
+import { where } from "sequelize";
 
 const getAllUser = async (_, response) => {
     try {
@@ -128,7 +128,7 @@ const deleteUserById = async (request, response) => {
 const editUserById = async (request, response) => {
     try {
         const { id } = request.params;
-        const { fullName, email } = request.body;
+        const { fullName } = request.body;
         const user = await userSchema.findByPk(id);
 
         if (!user) {
@@ -136,16 +136,21 @@ const editUserById = async (request, response) => {
         }
 
         await user.update({
-            fullName: fullName ? fullName.toLowerCase().trim() : user.fullName,
-            email: email ? email.toLowerCase().trim() : user.email,
+            fullName: fullName ? caplitalizeEachWord(fullName) : user.fullName,
+            // email: email ? email.toLowerCase().trim() : user.email,
         });
+
         response.status(200).json({
-            data: user,
+            data: {
+                id: user.id,
+                fullName: user.fullName,
+                email: user.email,
+            },
             message: `User successfully updated.`,
         });
         console.log(`✅ Post with id ${id} successfully updated`);
     } catch (error) {
-        console.error(`❌ Error in editUserById controller.`);
+        console.error(`❌ Error in editUserById controller: ${error.message}`);
         response.status(500).json({ message: "Failed to edit user" });
     }
 };
@@ -170,7 +175,57 @@ const getCurrentUser = async (request, response) => {
     }
 };
 
-const usersPost = async (request, response) => {};
+const CheckPassword = async (request, response) => {
+    try {
+        const { currentPassword, newPassword, confirmPassword } = request.body;
+        const inputPassword = currentPassword;
+        const { id } = request.user;
+
+        if (!inputPassword) {
+            return response
+                .status(400)
+                .json({ success: false, message: "No password provided" });
+        }
+
+        const user = await userSchema.scope("withPassword").findByPk(id);
+
+        if (!user) {
+            return response
+                .status(404)
+                .json({ success: false, message: "User not found" });
+        }
+
+        if (newPassword !== confirmPassword) {
+            return response
+                .status(400)
+                .json({ success: false, message: "Password doesn't match" });
+        }
+
+        const valid = await argon2.verify(user.password, inputPassword);
+        if (!valid) {
+            return response
+                .status(401)
+                .json({ success: false, message: "Invalid password" });
+        }
+
+        const hashedPassword = await argon2.hash(newPassword);
+
+        await userSchema.update(
+            { password: hashedPassword }, // updated values
+            { where: { id: user.id } } // correct where clause
+        );
+
+        response
+            .status(200)
+            .json({ success: true, message: "Password successfully changed" });
+    } catch (error) {
+        console.error(`❌ Error in CheckPassword controller.`, error);
+        response.status(500).json({
+            status: false,
+            message: "Failed to check current password",
+        });
+    }
+};
 
 export {
     getAllUser,
@@ -179,4 +234,5 @@ export {
     deleteUserById,
     editUserById,
     getCurrentUser,
+    CheckPassword,
 };

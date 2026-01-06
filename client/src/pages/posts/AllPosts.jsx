@@ -144,7 +144,6 @@ export function AllPosts() {
         <div className="min-h-screen flex flex-col w-full bg-linear-to-br from-slate-50 via-purple-50 to-slate-100">
             {/* Header */}
             <Header title="All Web Posts" icon={<Globe />} />
-            <Toaster />
 
             {/* Edit Dialog */}
             <Dialog

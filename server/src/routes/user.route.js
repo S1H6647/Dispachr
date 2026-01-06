@@ -1,5 +1,6 @@
 import { Router } from "express";
 import {
+    CheckPassword,
     createUser,
     deleteUserById,
     editUserById,
@@ -17,5 +18,6 @@ router.get("/:id", getUserById);
 router.post("/", createUser);
 router.delete("/:id", deleteUserById);
 router.put("/:id", editUserById);
+router.post("/checkPass", verifyUserToken, CheckPassword);
 
 export { router as userRouter };
