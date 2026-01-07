@@ -84,7 +84,7 @@ export default function SettingPage() {
 
         const resData = await response.json();
 
-        if (resData.success) {
+        if (resData.status) {
             toast.success(resData.message);
             setChangePasswordDialog(false);
         }

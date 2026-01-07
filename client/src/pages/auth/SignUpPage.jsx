@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { useState } from "react";
+import toast from "react-hot-toast";
 
 export default function SignUpPage() {
     const navigate = useNavigate();
@@ -47,10 +48,10 @@ export default function SignUpPage() {
             const data = await response.json();
             console.log(data);
             if (data.status) {
-                setSuccessMessage(data.message);
+                toast.success(data.message);
                 navigate("/dashboard", { replace: true });
             } else {
-                setErrorMessage(data.message);
+                toast.error(data.message);
                 //` Focus email input if email already exists (409 is conflict)
                 if (response.status === 409) {
                     setFocus("email");

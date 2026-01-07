@@ -47,21 +47,21 @@ async function createFacebookPost(title, description) {
         if (data.error) {
             console.error("❌ Facebook API Error:", data.error.message);
             return {
-                success: false,
+                status: false,
                 message: data.error.message,
             };
         }
 
         console.log("✅ Facebook post created successfully:", data.id);
         return {
-            success: true,
+            status: true,
             postId: data.id,
             message: "Post published to Facebook",
         };
     } catch (error) {
         console.error("❌ Error posting to Facebook:", error.message);
         return {
-            success: false,
+            status: false,
             message: error.message,
         };
     }
@@ -95,21 +95,21 @@ async function createFacebookPostWithImage(title, description, imageUrl) {
         if (data.error) {
             console.error("❌ Facebook API Error:", data.error.message);
             return {
-                success: false,
+                status: false,
                 message: data.error.message,
             };
         }
 
         console.log("✅ Facebook photo post created:", data.id);
         return {
-            success: true,
+            status: true,
             postId: data.id,
             message: "Photo published to Facebook",
         };
     } catch (error) {
         console.error("❌ Error posting photo to Facebook:", error.message);
         return {
-            success: false,
+            status: false,
             message: error.message,
         };
     }
@@ -118,7 +118,7 @@ async function createFacebookPostWithImage(title, description, imageUrl) {
 async function getFacebookPost() {
     try {
         return {
-            success: true,
+            status: true,
             data: await fetchFacebookPosts(process.env.FB_ACCESS_TOKEN),
         };
     } catch (error) {
@@ -126,13 +126,13 @@ async function getFacebookPost() {
         if (error.code === 190) {
             const newToken = await refreshAccessToken();
             return {
-                success: true,
+                status: true,
                 data: await fetchFacebookPosts(newToken),
             };
         }
 
         return {
-            success: false,
+            status: false,
             message: error.message,
         };
     }
@@ -197,18 +197,18 @@ async function deleteFacebookPost(postId) {
         if (data.error) {
             console.error("❌ Facebook API Error:", data.error.message);
             return {
-                success: false,
+                status: false,
                 message: data.error.message,
             };
         }
         return {
-            success: true,
+            status: true,
             message: "Post deleted successfully",
         };
     } catch (error) {
         console.error("❌ Error deleting Facebook post:", error.message);
         return {
-            success: false,
+            status: false,
             message: error.message,
         };
     }
@@ -242,7 +242,7 @@ const updateFacebookPost = async (postId, newTitle, newDescription) => {
                 parseError
             );
             return {
-                success: false,
+                status: false,
                 message: "Invalid response from Facebook API",
             };
         }
@@ -250,29 +250,29 @@ const updateFacebookPost = async (postId, newTitle, newDescription) => {
         if (data.error) {
             console.error("❌ Facebook API Error:", data.error.message);
             return {
-                success: false,
+                status: false,
                 message: data.error.message || "Facebook API error occurred",
             };
         }
 
-        // Check if response indicates success (Facebook API might return success: true or just an id)
+        // Check if response indicates status (Facebook API might return status: true or just an id)
         if (!response.ok) {
             return {
-                success: false,
+                status: false,
                 message: `Facebook API returned status ${response.status}`,
             };
         }
 
         console.log("✅ Facebook post updated successfully");
         return {
-            success: true,
+            status: true,
             postId: data.id || postId,
             message: "Post updated successfully",
         };
     } catch (error) {
         console.error("❌ Error updating the post:", error.message);
         return {
-            success: false,
+            status: false,
             message: error.message || "Failed to update Facebook post",
         };
     }

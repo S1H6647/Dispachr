@@ -184,7 +184,7 @@ const CheckPassword = async (request, response) => {
         if (!inputPassword) {
             return response
                 .status(400)
-                .json({ success: false, message: "No password provided" });
+                .json({ status: false, message: "No password provided" });
         }
 
         const user = await userSchema.scope("withPassword").findByPk(id);
@@ -192,20 +192,20 @@ const CheckPassword = async (request, response) => {
         if (!user) {
             return response
                 .status(404)
-                .json({ success: false, message: "User not found" });
+                .json({ status: false, message: "User not found" });
         }
 
         if (newPassword !== confirmPassword) {
             return response
                 .status(400)
-                .json({ success: false, message: "Password doesn't match" });
+                .json({ status: false, message: "Password doesn't match" });
         }
 
         const valid = await argon2.verify(user.password, inputPassword);
         if (!valid) {
             return response
                 .status(401)
-                .json({ success: false, message: "Invalid password" });
+                .json({ status: false, message: "Invalid password" });
         }
 
         const hashedPassword = await argon2.hash(newPassword);
@@ -217,7 +217,7 @@ const CheckPassword = async (request, response) => {
 
         response
             .status(200)
-            .json({ success: true, message: "Password successfully changed" });
+            .json({ status: true, message: "Password successfully changed" });
     } catch (error) {
         console.error(`❌ Error in CheckPassword controller.`, error);
         response.status(500).json({

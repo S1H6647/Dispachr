@@ -1,6 +1,8 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import SignInPage from "./pages/auth/SignInPage";
 import SignUpPage from "./pages/auth/SignUpPage";
+import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage";
+import ResetPasswordPage from "./pages/auth/ResetPasswordPage";
 import AuthLayout from "./layouts/AuthLayout";
 import DashboardLayout from "./layouts/DashboardLayout";
 import ErrorPage from "./pages/auth/ErrorPage";
@@ -26,6 +28,14 @@ export default function App() {
                         ></Route>
                         <Route path="signin" element={<SignInPage />} />
                         <Route path="signup" element={<SignUpPage />} />
+                        <Route
+                            path="forget-password"
+                            element={<ForgotPasswordPage />}
+                        />
+                        <Route
+                            path="reset-password/:token"
+                            element={<ResetPasswordPage />}
+                        />
                     </Route>
 
                     <Route element={<DashboardLayout />}>

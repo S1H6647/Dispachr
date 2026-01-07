@@ -98,7 +98,6 @@ export default function SignInPage() {
                     <form
                         onSubmit={handleSubmit(onSubmit)}
                         className="input-fields space-y-5"
-                        autoComplete="on"
                     >
                         {errorMessage && (
                             <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
@@ -115,7 +114,6 @@ export default function SignInPage() {
                                     type="email"
                                     placeholder="Enter your email"
                                     className="pl-10"
-                                    autoComplete="email"
                                     aria-invalid={
                                         errors.email ? "true" : "false"
                                     }
@@ -126,7 +124,6 @@ export default function SignInPage() {
                                             message: "Invalid email address",
                                         },
                                     })}
-                                    aria-label="email"
                                 />
                             </div>
                             {errors.email && (
@@ -162,7 +159,6 @@ export default function SignInPage() {
                                                 "Password must contain uppercase, lowercase, and number",
                                         },
                                     })}
-                                    aria-label="password"
                                 />
                                 <button
                                     type="button"
@@ -203,7 +199,9 @@ export default function SignInPage() {
                             </div>
 
                             <div className="text-blue-600 hover:underline">
-                                <a href="#">Forget password</a>
+                                <Link to="/auth/forget-password">
+                                    Forget password
+                                </Link>
                             </div>
                         </div>
 

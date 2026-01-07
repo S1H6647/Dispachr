@@ -3,7 +3,7 @@ export const validatePlatform = async (request, response, next) => {
         const { platforms } = request.body;
         if (!platforms || !Array.isArray(platforms) || platforms.length === 0) {
             return response.status(400).json({
-                success: false,
+                status: false,
                 message: "Please select at least one platform.",
             });
         }

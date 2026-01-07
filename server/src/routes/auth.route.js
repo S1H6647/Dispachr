@@ -1,10 +1,16 @@
 import { Router } from "express";
-import { login, logout } from "../controller/auth.controller.js";
-import { loginValidator } from "../utils/user.validator.js";
+import {
+    forgetPassword,
+    login,
+    logout,
+    resetPassword,
+} from "../controller/auth.controller.js";
 
 const router = Router();
 
 router.post("/login", login);
 router.post("/logout", logout);
+router.post("/forget-password", forgetPassword);
+router.post("/reset-password/:token", resetPassword);
 
 export { router as authRouter };

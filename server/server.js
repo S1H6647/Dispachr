@@ -9,6 +9,8 @@ import { authRouter } from "./src/routes/auth.route.js";
 import writeLog from "./src/middleware/writeLog.js";
 import { verifyUserToken } from "./src/middleware/verifyUserToken.js";
 import cookieParser from "cookie-parser";
+import "./src/workers/email.worker.js";
+import { verifyEmailConfig } from "./src/config/email.config.js";
 
 dotenv.config();
 
@@ -36,7 +38,7 @@ app.get("/api/twitter/debug-public", async (request, response) => {
         console.error("❌ Error in public twitter debug:", error);
         return response
             .status(500)
-            .json({ success: false, error: error.message });
+            .json({ status: false, error: error.message });
     }
 });
 
@@ -49,7 +51,8 @@ app.use("/api/posts", verifyUserToken, postRouter);
 app.use("/api/users", userRouter);
 app.use("/api/auth", authRouter);
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
     connection();
+    await verifyEmailConfig();
     console.log(`The server is running on http://localhost:${PORT}`);
 });

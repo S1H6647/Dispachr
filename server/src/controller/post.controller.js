@@ -153,7 +153,7 @@ const deleteFacebookPosts = async (request, response) => {
 
         console.log("Delete message: ", deletedPost);
 
-        if (deletedPost.success) {
+        if (deletedPost.status) {
             response
                 .status(200)
                 .json({ status: true, message: deletedPost.message });
@@ -227,7 +227,7 @@ const editFacebookPostById = async (request, response) => {
             newDescription
         );
 
-        if (updatedPost.success) {
+        if (updatedPost.status) {
             response
                 .status(200)
                 .json({ status: true, message: updatedPost.message });
@@ -282,7 +282,7 @@ const dispatchPost = async (request, response) => {
                     message: "Post successfully created.",
                 });
 
-                results.website = { success: true, data: post };
+                results.website = { status: true, data: post };
                 console.log("✅ Post successfully created");
             } catch (error) {
                 console.error(`❌ Error in createPost controller. ${error}`);
@@ -311,14 +311,14 @@ const dispatchPost = async (request, response) => {
         }
 
         response.status(201).json({
-            success: true,
+            status: true,
             message: "Post dispatched to selected platforms",
             results: responseData,
         });
     } catch (error) {
         console.error(`❌ Error in dispatchPost controller: ${error}`);
         response.status(500).json({
-            success: false,
+            status: false,
             message: "Failed to dispatch post",
             error: error.message,
         });
@@ -398,7 +398,7 @@ const getPostChart = async (request, response) => {
         );
 
         response.status(200).json({
-            success: true,
+            status: true,
             data: chartData,
             message: "Chart data successfully fetched",
         });
@@ -407,7 +407,7 @@ const getPostChart = async (request, response) => {
     } catch (error) {
         console.error(`❌ Error in getPostChart controller: ${error}`);
         response.status(500).json({
-            success: false,
+            status: false,
             error: error.message,
         });
     }

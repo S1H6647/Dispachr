@@ -69,14 +69,14 @@ export async function createTweetService(title, description) {
 
         if (data.errors) {
             console.error("❌ Twitter API Error:", data.errors);
-            return { success: false, error: data.errors };
+            return { status: false, error: data.errors };
         }
 
         console.log("✅ Tweet created:", data.data?.id);
-        return { success: true, data, message: "Post published to Twitter" };
+        return { status: true, data, message: "Post published to Twitter" };
     } catch (error) {
         console.error("❌ Error creating tweet:", error.message);
-        return { success: false, error: error.message };
+        return { status: false, error: error.message };
     }
 }
 
@@ -88,14 +88,14 @@ export async function deleteTweetService(tweetId) {
         const data = await twitterRequest(`/tweets/${tweetId}`, "DELETE");
 
         if (data.errors) {
-            return { success: false, error: data.errors };
+            return { status: false, error: data.errors };
         }
 
         console.log("✅ Tweet deleted:", tweetId);
-        return { success: true, data };
+        return { status: true, data };
     } catch (error) {
         console.error("❌ Error deleting tweet:", error.message);
-        return { success: false, error: error.message };
+        return { status: false, error: error.message };
     }
 }
 
@@ -107,13 +107,13 @@ export async function getMyDataService() {
         const data = await twitterRequest("/users/me");
 
         if (data.errors) {
-            return { success: false, error: data.errors };
+            return { status: false, error: data.errors };
         }
 
-        return { success: true, data: data.data };
+        return { status: true, data: data.data };
     } catch (error) {
         console.error("❌ Error fetching user data:", error.message);
-        return { success: false, error: error.message };
+        return { status: false, error: error.message };
     }
 }
 
@@ -139,12 +139,12 @@ export async function getUserTweetsService(userId) {
         // const data = await twitterRequest(`/users/${userId}/tweets`);
 
         if (data.errors) {
-            return { success: false, error: data.errors };
+            return { status: false, error: data.errors };
         }
 
-        return { success: true, data: data.data };
+        return { status: true, data: data.data };
     } catch (error) {
         console.error("❌ Error fetching tweets:", error.message);
-        return { success: false, error: error.message };
+        return { status: false, error: error.message };
     }
 }

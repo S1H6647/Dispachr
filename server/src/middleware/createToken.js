@@ -1,6 +1,6 @@
 export const createToken = (response, accessToken, isRemember) => {
     try {
-        let maxAge = 10 * 60 * 1000; // 10 minutes
+        let maxAge = 2 * 60 * 60 * 1000; // 2 hours
 
         if (isRemember) {
             maxAge = 7 * 24 * 60 * 60 * 1000; // 7 days
