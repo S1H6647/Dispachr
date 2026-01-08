@@ -8,16 +8,18 @@
     background-repeat: no-repeat;
     position: relative;
     padding: 2rem;
+    background: hsl(270, 50%, 92%);
 }
 
-.auth-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 1;
+/* Apply brightness filter to background image based on theme */
+.dark .auth-container {
+    filter: brightness(0.8);
+    background: hsl(270, 25%, 10%);
+}
+
+.dark .auth-container .auth-box,
+.dark .auth-container .absolute {
+    filter: brightness(1.25);
 }
 
 .auth-box {

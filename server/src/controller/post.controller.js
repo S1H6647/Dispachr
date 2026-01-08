@@ -27,7 +27,6 @@ const getAllPosts = async (_, response) => {
 };
 
 const getTwitterPosts = async (_, response) => {
-    const userid = "1940761508780429316";
     try {
         const myData = await getMyDataService();
 

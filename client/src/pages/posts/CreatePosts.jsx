@@ -106,7 +106,7 @@ export default function CreatePosts() {
     const isAtLimit = characterCount >= maxLength;
 
     return (
-        <div className="min-h-screen w-full bg-linear-to-br from-slate-50 to-slate-100">
+        <div className="min-h-screen w-full bg-linear-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-900">
             {/* Header */}
             <Header
                 title="Create Post"
@@ -214,7 +214,7 @@ export default function CreatePosts() {
                                                                 ${
                                                                     isChecked
                                                                         ? "border-primary bg-primary/5 shadow-md"
-                                                                        : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                                                                        : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800"
                                                                 }
                                                             `}
                                                         >
@@ -252,7 +252,7 @@ export default function CreatePosts() {
                                                                 className={`p-3 rounded-full ${
                                                                     isChecked
                                                                         ? "bg-primary/10 text-primary"
-                                                                        : "bg-gray-100 text-gray-500"
+                                                                        : "bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400"
                                                                 }`}
                                                             >
                                                                 {platform.icon}
@@ -261,7 +261,7 @@ export default function CreatePosts() {
                                                                 className={`font-medium ${
                                                                     isChecked
                                                                         ? "text-primary"
-                                                                        : "text-gray-600"
+                                                                        : "text-gray-600 dark:text-gray-400"
                                                                 }`}
                                                             >
                                                                 {platform.name}

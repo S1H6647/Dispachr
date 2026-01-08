@@ -70,18 +70,17 @@ export default function GetHelp() {
 
     return (
         <>
-            <div className="h-full min-h-dvh max-h-dvh flex flex-col w-full bg-linear-to-br from-slate-50 via-purple-50 to-slate-100 overflow-y-auto">
+            <div className="h-full min-h-dvh max-h-dvh flex flex-col w-full bg-linear-to-br from-slate-50 via-purple-50 to-slate-100 dark:from-slate-900 dark:via-slate-900 dark:to-slate-900 overflow-y-auto">
                 <Header
                     title="Get Help"
                     icon={<HelpCircleIcon />}
                     subHeader="Support, guides, and FAQs"
-                    profilePicture
                 />
 
                 <section className="mt-6 px-10 pb-10 flex-1 flex items-start justify-center">
                     <div className="w-full max-w-2xl">
                         {/* Header Card */}
-                        <div className="bg-white border rounded-lg p-6 mb-6 shadow-sm">
+                        <div className="bg-white dark:bg-card border rounded-lg p-6 mb-6 shadow-sm">
                             <div className="flex items-start gap-4">
                                 <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center shrink-0">
                                     <HelpCircleIcon className="w-6 h-6 text-purple-600" />
@@ -100,7 +99,7 @@ export default function GetHelp() {
                         </div>
 
                         {/* Form Card */}
-                        <div className="bg-white border rounded-lg p-8 shadow-sm">
+                        <div className="bg-white dark:bg-card border rounded-lg p-8 shadow-sm">
                             {isSubmitted ? (
                                 <div className="flex flex-col items-center justify-center py-12">
                                     <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mb-4">

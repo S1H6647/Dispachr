@@ -78,12 +78,11 @@ export default function Dashboard() {
 
     return (
         <>
-            <div className="h-full flex flex-col w-full bg-linear-to-br from-slate-50 via-purple-50 to-slate-100">
+            <div className="h-full flex flex-col w-full bg-linear-to-br from-slate-50 via-purple-50 to-slate-100 dark:from-slate-900 dark:via-slate-900 dark:to-slate-900">
                 <Header
                     title="Dashboard"
                     icon={<HouseIcon />}
-                    subHeader = "Welcome back. Here's your post overview."
-                    profilePicture
+                    subHeader="Welcome back. Here's your post overview."
                 />
 
                 <section className="mt-6 px-10">
@@ -103,7 +102,7 @@ export default function Dashboard() {
                                 </p>
                             </div> */}
 
-                            <div className="p-4 border rounded-lg bg-white">
+                            <div className="p-4 border rounded-lg bg-white dark:bg-card">
                                 <p className="font-bold text-2xl">
                                     Posts Chart
                                 </p>
@@ -214,7 +213,7 @@ export default function Dashboard() {
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {/* Website Posts */}
-                            <div className="bg-white border rounded-lg p-5">
+                            <div className="bg-white dark:bg-card border rounded-lg p-5">
                                 <div className="flex items-center gap-2 mb-4">
                                     <div className="w-3 h-3 rounded-full bg-chart-1"></div>
                                     <h4 className="font-bold text-xl">
@@ -227,7 +226,7 @@ export default function Dashboard() {
                                         recentWebsitePosts.map((post) => (
                                             <div
                                                 key={post.id}
-                                                className="p-3 border rounded-md hover:bg-slate-50 transition-colors"
+                                                className="p-3 border rounded-md hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
                                             >
                                                 <h5 className="font-semibold text-sm mb-1">
                                                     {post.title}
@@ -260,7 +259,7 @@ export default function Dashboard() {
                             </div>
 
                             {/* Facebook Posts */}
-                            <div className="bg-white border rounded-lg p-5">
+                            <div className="bg-white dark:bg-card border rounded-lg p-5">
                                 <div className="flex items-center gap-2 mb-4">
                                     <div className="w-3 h-3 rounded-full bg-chart-2"></div>
                                     <h4 className="font-bold text-xl">
@@ -273,7 +272,7 @@ export default function Dashboard() {
                                         recentFacebookPosts.map((post) => (
                                             <div
                                                 key={post.id}
-                                                className="p-3 border rounded-md hover:bg-slate-50 transition-colors"
+                                                className="p-3 border rounded-md hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
                                             >
                                                 <h5 className="font-semibold text-sm mb-1">
                                                     {post.message.split(

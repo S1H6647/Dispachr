@@ -9,12 +9,14 @@ import { EyeIcon, EyeOffIcon, LockIcon, MailIcon } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { useState } from "react";
 import { useAuth } from "../../hooks/useAuth";
+import { ThemeToggleSimple } from "../../components/ui/theme-toggle";
+import toast from "react-hot-toast";
+import ParticlesBackground from "../../components/ui/particles-background";
 
 export default function SignInPage() {
     const navigate = useNavigate();
     const { clearAuth, setAuth } = useAuth();
     const [showPassword, setShowPassword] = useState(false);
-    const [errorMessage, setErrorMessage] = useState("");
     const {
         register,
         handleSubmit,
@@ -24,7 +26,6 @@ export default function SignInPage() {
 
     const onSubmit = async (e) => {
         console.log(e);
-        setErrorMessage(""); // Clear previous errors
 
         try {
             const response = await fetch("/api/auth/login", {
@@ -60,16 +61,16 @@ export default function SignInPage() {
                 };
             }
 
-            console.log("Response data:", resData);
-
             if (resData.status) {
                 clearAuth(); // Clear any stale cache
                 setAuth(resData.data); // Set new auth state (backend returns 'data', not 'user')
+                toast.success(resData.message || "Login successful!");
                 navigate("/dashboard", { replace: true });
             } else {
-                setErrorMessage(
+                toast.error(
                     resData.message || "Login failed. Please try again."
                 );
+                setFocus("password");
 
                 if (response.status === 401) {
                     setFocus("email");
@@ -77,7 +78,7 @@ export default function SignInPage() {
             }
         } catch (error) {
             console.error("Login error:", error);
-            setErrorMessage(
+            toast.error(
                 "Network error. Please check your connection and try again."
             );
         }
@@ -87,9 +88,13 @@ export default function SignInPage() {
         <>
             <div
                 className="auth-container"
-                style={{ backgroundImage: `url(${image})` }}
+                // style={{ backgroundImage: `url(${image})` }}
             >
                 <div className="auth-overlay"></div>
+                <ParticlesBackground />
+                <div className="absolute top-4 right-4 z-10">
+                    <ThemeToggleSimple />
+                </div>
                 <div className="auth-box">
                     <div className="welcome-message">
                         <p className="title">Welcome Back!</p>
@@ -99,11 +104,6 @@ export default function SignInPage() {
                         onSubmit={handleSubmit(onSubmit)}
                         className="input-fields space-y-5"
                     >
-                        {errorMessage && (
-                            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-                                {errorMessage}
-                            </div>
-                        )}
                         <div className="space-y-2">
                             <Label htmlFor="email">Email</Label>
                             <div className="relative">

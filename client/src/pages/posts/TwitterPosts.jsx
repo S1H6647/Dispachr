@@ -53,7 +53,7 @@ export function TwitterPosts() {
     }
 
     return (
-        <div className="min-h-screen w-full bg-linear-to-br from-slate-50 to-slate-100">
+        <div className="min-h-screen w-full bg-linear-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-900">
             {/* Header */}
             <Header title="All Web Posts" icon={<GlobeIcon />} />
 

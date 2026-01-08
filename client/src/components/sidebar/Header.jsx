@@ -1,15 +1,11 @@
 import { SidebarTrigger } from "../ui/sidebar";
 import pfp from "../../assets/logo.webp";
+import { ThemeToggleSimple } from "../ui/theme-toggle";
 
-export function Header({
-    title,
-    icon,
-    subHeader = "",
-    profilePicture = false,
-}) {
+export function Header({ title, icon, subHeader = "" }) {
     return (
         <>
-            <header className="sticky top-0 z-10 bg-white/80 backdrop-blur-sm border-b">
+            <header className="sticky top-0 z-10 bg-white/80 dark:bg-card/80 backdrop-blur-sm border-b">
                 <div className="flex items-center gap-4 px-6 py-4">
                     <SidebarTrigger className="-ml-2" />
                     <div className="flex items-center gap-3 justify-between w-full">
@@ -24,22 +20,16 @@ export function Header({
                                     {title}
                                 </h1>
                                 {subHeader && (
-                                    <p className="text-sm text-gray-500">
+                                    <p className="text-sm text-muted-foreground">
                                         {subHeader}
                                     </p>
                                 )}
                             </div>
                         </div>
                     </div>
-                    {profilePicture && (
-                        <div>
-                            <img
-                                src={pfp}
-                                alt="Profile pic"
-                                className="size-11 rounded-full object-cover"
-                            />
-                        </div>
-                    )}
+
+                    {/* Animated Theme Toggle */}
+                    <ThemeToggleSimple innerIconSize="1.3rem" />
                 </div>
             </header>
         </>

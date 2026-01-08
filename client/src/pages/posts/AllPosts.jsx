@@ -67,7 +67,7 @@ export function AllPosts() {
 
     if (error) {
         return (
-            <div className="min-h-screen flex flex-col w-full bg-linear-to-br from-slate-50 to-slate-100">
+            <div className="min-h-screen flex flex-col w-full bg-linear-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-900">
                 <Header title="All Web Posts" icon={<Globe />} />
                 <div className="flex items-center justify-center flex-1">
                     <Card className="max-w-md border-red-200 bg-red-50">
@@ -141,7 +141,7 @@ export function AllPosts() {
     };
 
     return (
-        <div className="min-h-screen flex flex-col w-full bg-linear-to-br from-slate-50 via-purple-50 to-slate-100">
+        <div className="min-h-screen flex flex-col w-full bg-linear-to-br from-slate-50 via-purple-50 to-slate-100 dark:from-slate-900 dark:via-slate-900 dark:to-slate-900">
             {/* Header */}
             <Header title="All Web Posts" icon={<Globe />} />
 
@@ -255,11 +255,11 @@ export function AllPosts() {
                             {posts.map((post) => (
                                 <Card
                                     key={post.id}
-                                    className="group relative overflow-hidden rounded-xl border border-slate-200 bg-white/90 backdrop-blur-sm shadow-md hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 hover:border-purple-300"
+                                    className="group relative overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 bg-white/90 dark:bg-card/90 backdrop-blur-sm shadow-md hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 hover:border-purple-300 dark:hover:border-purple-600"
                                 >
                                     <CardHeader className="pb-3">
                                         <div className="flex items-start justify-between gap-2">
-                                            <span className="line-clamp-2 text-lg font-semibold text-slate-800 flex-1">
+                                            <span className="line-clamp-2 text-lg font-semibold text-slate-800 dark:text-slate-100 flex-1">
                                                 {post.title}
                                             </span>
                                             <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
@@ -347,7 +347,7 @@ export function AllPosts() {
                                                 </Dialog>
                                             </div>
                                         </div>
-                                        <CardDescription className="flex items-center gap-1.5 text-xs text-slate-500 mt-2">
+                                        <CardDescription className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 mt-2">
                                             <Calendar className="size-4.5 text-purple-500" />
                                             {new Date(
                                                 post.publishedAt
@@ -359,12 +359,12 @@ export function AllPosts() {
                                         </CardDescription>
                                     </CardHeader>
                                     <CardContent className="space-y-3 pt-0 pb-4">
-                                        <p className="text-sm text-slate-600 line-clamp-4 leading-relaxed">
+                                        <p className="text-sm text-slate-600 dark:text-slate-300 line-clamp-4 leading-relaxed">
                                             {post.description}
                                         </p>
                                         {post.platforms &&
                                             post.platforms.length > 0 && (
-                                                <div className="flex flex-wrap gap-2 pt-3 border-t border-slate-100">
+                                                <div className="flex flex-wrap gap-2 pt-3 border-t border-slate-100 dark:border-slate-700">
                                                     {post.platforms.map(
                                                         (platform) => (
                                                             <span

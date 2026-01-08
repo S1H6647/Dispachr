@@ -1,5 +1,10 @@
 import crypto from "crypto";
 import OAuth from "oauth-1.0a";
+import {
+    withCache,
+    CACHE_KEYS,
+    invalidateTwitterCache,
+} from "./cache.service.js";
 
 // Twitter API Configuration (move to .env in production)
 const config = {
@@ -72,6 +77,9 @@ export async function createTweetService(title, description) {
             return { status: false, error: data.errors };
         }
 
+        // Invalidate cache after creating a new tweet
+        await invalidateTwitterCache();
+
         console.log("✅ Tweet created:", data.data?.id);
         return { status: true, data, message: "Post published to Twitter" };
     } catch (error) {
@@ -91,6 +99,9 @@ export async function deleteTweetService(tweetId) {
             return { status: false, error: data.errors };
         }
 
+        // Invalidate cache after deleting a tweet
+        await invalidateTwitterCache();
+
         console.log("✅ Tweet deleted:", tweetId);
         return { status: true, data };
     } catch (error) {
@@ -100,51 +111,65 @@ export async function deleteTweetService(tweetId) {
 }
 
 /**
- * Get authenticated user's data
+ * Get authenticated user's data (cached for 5 minutes)
  */
 export async function getMyDataService() {
-    try {
-        const data = await twitterRequest("/users/me");
+    const cacheKey = CACHE_KEYS.TWITTER_MY_DATA;
 
-        if (data.errors) {
-            return { status: false, error: data.errors };
-        }
+    return withCache(
+        cacheKey,
+        async () => {
+            try {
+                const data = await twitterRequest("/users/me");
 
-        return { status: true, data: data.data };
-    } catch (error) {
-        console.error("❌ Error fetching user data:", error.message);
-        return { status: false, error: error.message };
-    }
+                if (data.errors) {
+                    return { status: false, error: data.errors };
+                }
+
+                return { status: true, data: data.data };
+            } catch (error) {
+                console.error("❌ Error fetching user data:", error.message);
+                return { status: false, error: error.message };
+            }
+        },
+        300 // Cache for 5 minutes
+    );
 }
 
 /**
- * Get all tweets for a user
+ * Get all tweets for a user (cached for 5 minutes)
  */
 export async function getUserTweetsService(userId) {
-    try {
-        const bearerToken = process.env.TWITTER_BEARER_TOKEN;
-        const options = {
-            method: "GET",
-            headers: { Authorization: `Bearer ${bearerToken}` },
-        };
+    const cacheKey = `${CACHE_KEYS.TWITTER_TWEETS}:${userId}`;
 
-        const response = await fetch(
-            `${BASE_URL}/users/${userId}/tweets`,
-            options
-        );
-        const data = await response.json();
+    return withCache(
+        cacheKey,
+        async () => {
+            try {
+                const bearerToken = process.env.TWITTER_BEARER_TOKEN;
+                const options = {
+                    method: "GET",
+                    headers: { Authorization: `Bearer ${bearerToken}` },
+                };
 
-        console.log(data);
+                const response = await fetch(
+                    `${BASE_URL}/users/${userId}/tweets`,
+                    options
+                );
+                const data = await response.json();
 
-        // const data = await twitterRequest(`/users/${userId}/tweets`);
+                console.log(data);
 
-        if (data.errors) {
-            return { status: false, error: data.errors };
-        }
+                if (data.errors) {
+                    return { status: false, error: data.errors };
+                }
 
-        return { status: true, data: data.data };
-    } catch (error) {
-        console.error("❌ Error fetching tweets:", error.message);
-        return { status: false, error: error.message };
-    }
+                return { status: true, data: data.data };
+            } catch (error) {
+                console.error("❌ Error fetching tweets:", error.message);
+                return { status: false, error: error.message };
+            }
+        },
+        300 // Cache for 5 minutes
+    );
 }

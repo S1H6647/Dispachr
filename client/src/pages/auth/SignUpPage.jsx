@@ -15,13 +15,13 @@ import {
 import { useForm } from "react-hook-form";
 import { useState } from "react";
 import toast from "react-hot-toast";
+import { ThemeToggleSimple } from "../../components/ui/theme-toggle";
+import ParticlesBackground from "../../components/ui/particles-background";
 
 export default function SignUpPage() {
     const navigate = useNavigate();
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-    const [successMessage, setSuccessMessage] = useState("");
-    const [errorMessage, setErrorMessage] = useState("");
     const {
         register,
         watch,
@@ -34,10 +34,9 @@ export default function SignUpPage() {
 
     async function onSubmit(e) {
         try {
-            setErrorMessage("");
             console.log(e);
 
-            const response = await fetch("http://localhost:8080/api/users/", {
+            const response = await fetch("/api/users/", {
                 body: JSON.stringify(e),
                 method: "POST",
                 headers: {
@@ -59,6 +58,7 @@ export default function SignUpPage() {
             }
         } catch (error) {
             console.log("Error: ", error);
+            toast.error("Something went wrong. Please try again.");
         }
     }
 
@@ -69,6 +69,10 @@ export default function SignUpPage() {
                 style={{ backgroundImage: `url(${image})` }}
             >
                 <div className="auth-overlay"></div>
+                <ParticlesBackground />
+                <div className="absolute top-4 right-4 z-10">
+                    <ThemeToggleSimple />
+                </div>
                 <div className="auth-box">
                     <div className="welcome-message">
                         <p className="title">Welcome Aboard!</p>
@@ -82,16 +86,6 @@ export default function SignUpPage() {
                         onSubmit={handleSubmit(onSubmit)}
                     >
                         <div className="space-y-2">
-                            {successMessage && (
-                                <div className="bg-green-100 border border-green-400 px-4 py-3 rounded text-green-700">
-                                    {successMessage}
-                                </div>
-                            )}
-                            {errorMessage && (
-                                <div className="bg-red-100 border border-red-400 px-4 py-3 rounded text-red-700">
-                                    {errorMessage}
-                                </div>
-                            )}
                             <Label htmlFor="fullName">Full Name</Label>
                             <div className="relative">
                                 <UserRoundIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -124,7 +118,6 @@ export default function SignUpPage() {
                                 </span>
                             )}
                         </div>
-
                         <div className="space-y-2">
                             <Label htmlFor="email">Email</Label>
                             <div className="relative">
@@ -152,7 +145,6 @@ export default function SignUpPage() {
                                 </span>
                             )}
                         </div>
-
                         <div className="space-y-2">
                             <Label htmlFor="password">Password</Label>
                             <div className="relative">
@@ -199,7 +191,6 @@ export default function SignUpPage() {
                                 </span>
                             )}
                         </div>
-
                         <div className="space-y-2">
                             <Label htmlFor="confirmPassword">
                                 Confirm Password
@@ -250,7 +241,6 @@ export default function SignUpPage() {
                                 </span>
                             )}
                         </div>
-
                         <div className="space-y-4">
                             <Button
                                 type="submit"
@@ -276,7 +266,6 @@ export default function SignUpPage() {
                                 Sign up with Google
                             </Button>
                         </div>
-
                         <div className="text-center">
                             Already have an account?
                             <Link
