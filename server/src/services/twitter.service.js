@@ -158,7 +158,7 @@ export async function getUserTweetsService(userId) {
                 );
                 const data = await response.json();
 
-                console.log(data);
+                console.log("Twitter data: ", data);
 
                 if (data.errors) {
                     return { status: false, error: data.errors };

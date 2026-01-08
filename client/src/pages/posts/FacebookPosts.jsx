@@ -11,6 +11,8 @@ import {
     Trash2Icon,
     PencilIcon,
     FacebookIcon,
+    X,
+    SearchIcon,
 } from "lucide-react";
 import { Header } from "@/components/sidebar/Header";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
@@ -28,6 +30,7 @@ import {
 import { NoPost } from "@/components/ui/NoPost";
 import toast, { Toaster } from "react-hot-toast";
 import { Input } from "@/components/ui/input";
+import { useDebounce } from "@/hooks/useDebounce";
 
 export function FacebookPosts() {
     const [posts, setPosts] = useState([]);
@@ -39,6 +42,22 @@ export function FacebookPosts() {
     const [editTitle, setEditTitle] = useState("");
     const [editDescription, setEditDescription] = useState("");
     const [isUpdating, setIsUpdating] = useState(false);
+    const [searchTerm, setSearchTerm] = useState("");
+    const debouncedSearchTerm = useDebounce(searchTerm, 300);
+    const [filteredPosts, setFilteredPosts] = useState([]);
+
+    useEffect(() => {
+        if (!debouncedSearchTerm.trim()) {
+            setFilteredPosts(posts);
+            return;
+        }
+
+        const lowercasedSearch = debouncedSearchTerm.toLowerCase();
+        const filtered = posts.filter((post) =>
+            post.message?.toLowerCase().includes(lowercasedSearch)
+        );
+        setFilteredPosts(filtered);
+    }, [debouncedSearchTerm, posts]);
 
     useEffect(() => {
         const fetchAllPosts = async () => {
@@ -193,23 +212,23 @@ export function FacebookPosts() {
                         <DialogTitle className="text-xl font-semibold">
                             Edit Post
                         </DialogTitle>
-                        <DialogDescription className="text-slate-600">
+                        <DialogDescription className="text-slate-600 dark:text-slate-400">
                             You can edit your facebook post here.
                         </DialogDescription>
                     </DialogHeader>
                     <div className="py-4 space-y-4">
                         <div className="space-y-2">
-                            <p className="text-sm font-semibold text-slate-700">
+                            <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">
                                 Title:
                             </p>
                             <Input
                                 value={editTitle}
                                 onChange={(e) => setEditTitle(e.target.value)}
-                                className="text-sm text-slate-600 bg-slate-50 p-3 rounded-lg border border-slate-200"
+                                className="text-sm dark:text-slate-200 dark:bg-slate-900/50 p-3 rounded-lg border border-slate-200 dark:border-slate-800"
                             />
                         </div>
                         <div className="space-y-2">
-                            <p className="text-sm font-semibold text-slate-700">
+                            <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">
                                 Description:
                             </p>
                             <Input
@@ -217,13 +236,13 @@ export function FacebookPosts() {
                                 onChange={(e) =>
                                     setEditDescription(e.target.value)
                                 }
-                                className="text-sm text-slate-600 bg-slate-50 p-3 rounded-lg border border-slate-200 max-h-40 overflow-y-auto"
+                                className="text-sm dark:text-slate-200 dark:bg-slate-900/50 p-3 rounded-lg border border-slate-200 dark:border-slate-800 max-h-40 overflow-y-auto"
                             />
                         </div>
                         {selectedPost?.platforms &&
                             selectedPost.platforms.length > 0 && (
                                 <div className="space-y-2">
-                                    <p className="text-sm font-semibold text-slate-700">
+                                    <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">
                                         Platforms:
                                     </p>
                                     <div className="flex flex-wrap gap-2">
@@ -270,21 +289,57 @@ export function FacebookPosts() {
                 </div>
             )}
 
+            {/* Search Bar */}
+            <div className="px-6 pt-4 max-w-7xl mx-auto w-full">
+                <div className="relative group">
+                    <div className="absolute inset-y-0 z-999 left-0 pl-3 flex items-center pointer-events-none text-slate-400 group-focus-within:text-blue-500 transition-colors">
+                        <SearchIcon className="h-4 w-4" />
+                    </div>
+
+                    <Input
+                        type="text"
+                        placeholder="Search posts..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-10 h-11 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm border-slate-200 dark:border-slate-800 focus:ring-2 focus:ring-blue-500/20 transition-all text-sm rounded-xl"
+                    />
+                    {searchTerm && (
+                        <button
+                            onClick={() => setSearchTerm("")}
+                            className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors cursor-pointer"
+                        >
+                            <X className="h-4 w-4" />
+                        </button>
+                    )}
+                </div>
+            </div>
+
             {/* No posts */}
-            <NoPost posts={posts} loading={loading} />
+            <NoPost posts={filteredPosts} loading={loading} />
 
             {!loading && posts.length > 0 && (
                 <div className="flex-1 p-6">
                     <div className="max-w-7xl mx-auto">
-                        <div className="mb-6">
-                            <p className="text-sm text-slate-600 mt-1">
-                                {posts.length}{" "}
-                                {posts.length === 1 ? "post" : "posts"} found
+                        <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                            <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">
+                                {searchTerm.trim() ? (
+                                    <>
+                                        Found {filteredPosts.length}{" "}
+                                        {filteredPosts.length === 1
+                                            ? "result"
+                                            : "results"}{" "}
+                                        for "{searchTerm}"
+                                    </>
+                                ) : (
+                                    <>
+                                        Showing {posts.length}{" "}
+                                        {posts.length === 1 ? "post" : "posts"}
+                                    </>
+                                )}
                             </p>
                         </div>
-
                         <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-                            {posts.map((post) => {
+                            {filteredPosts.map((post) => {
                                 const messageParts = post.message
                                     ? post.message.split("\n\n")
                                     : ["", ""];

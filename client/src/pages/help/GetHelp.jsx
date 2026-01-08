@@ -248,11 +248,11 @@ export default function GetHelp() {
                         </div>
 
                         {/* Additional Help Card */}
-                        <div className="mt-6 bg-linear-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg p-6">
-                            <h3 className="font-semibold mb-3 text-purple-900">
+                        <div className="mt-6 bg-linear-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 border border-purple-200 dark:border-purple-800 rounded-lg p-6">
+                            <h3 className="font-semibold mb-3 text-purple-900 dark:text-purple-100">
                                 Need immediate assistance?
                             </h3>
-                            <div className="space-y-2 text-sm text-purple-800">
+                            <div className="space-y-2 text-sm text-purple-800 dark:text-purple-200">
                                 <p className="flex items-center gap-2">
                                     <MailIcon className="w-4 h-4" />
                                     Email us at:{" "}
