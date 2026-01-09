@@ -1,4 +1,3 @@
-import image from "../../assets/loginpage.jpg";
 import google from "../../assets/Google.svg";
 import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
@@ -17,6 +16,7 @@ import { useState } from "react";
 import toast from "react-hot-toast";
 import { ThemeToggleSimple } from "../../components/ui/theme-toggle";
 import ParticlesBackground from "../../components/ui/particles-background";
+import OAuth from "@/components/ui/OAuth";
 
 export default function SignUpPage() {
     const navigate = useNavigate();
@@ -64,10 +64,7 @@ export default function SignUpPage() {
 
     return (
         <>
-            <div
-                className="auth-container"
-                style={{ backgroundImage: `url(${image})` }}
-            >
+            <div className="auth-container">
                 <div className="auth-overlay"></div>
                 <ParticlesBackground />
                 <div className="absolute top-4 right-4 z-10">
@@ -249,22 +246,7 @@ export default function SignUpPage() {
                             >
                                 {isSubmitting ? "Signing Up..." : "Sign Up"}
                             </Button>
-
-                            <Button
-                                type="button"
-                                variant="outline"
-                                className="w-full"
-                                onClick={() => {
-                                    console.log("Google sign-up clicked");
-                                }}
-                            >
-                                <img
-                                    src={google}
-                                    alt="Google"
-                                    className="mr-2 w-5 h-5"
-                                />
-                                Sign up with Google
-                            </Button>
+                            <OAuth text="Sign up with Google" />
                         </div>
                         <div className="text-center">
                             Already have an account?

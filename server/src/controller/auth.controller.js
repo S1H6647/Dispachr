@@ -217,4 +217,56 @@ const resetPassword = async (request, response) => {
     }
 };
 
-export { login, logout, forgetPassword, resetPassword };
+const googleLogin = async (request, response) => {
+    try {
+        const { fullName, email } = request.body;
+        if (!fullName || !email) {
+            return response.status(400).json({
+                success: false,
+                message: "Missing required fields",
+            });
+        }
+
+        let user = await userSchema.findOne({ where: { email } });
+        if (!user) {
+            user = await userSchema.create({
+                fullName,
+                email,
+                accountType: "GOOGLE",
+            });
+        }
+
+        const userData = {
+            id: user.id,
+            email: user.email,
+        };
+
+        const tokenExpiry = "24h";
+        const accessToken = jwt.sign(
+            userData,
+            process.env.ACCESS_TOKEN_SECRET,
+            { expiresIn: tokenExpiry }
+        );
+
+        createToken(response, accessToken, false);
+
+        response.status(200).json({
+            data: {
+                id: user.id,
+                fullName: user.fullName,
+                email: user.email,
+            },
+            status: true,
+            message: "Login successful",
+        });
+        console.log(`✅ Login successful.`);
+    } catch (error) {
+        console.error(`❌ Error in googleLogin controller. ${error}`);
+        response.status(500).json({
+            status: false,
+            message: error.message || "Failed to login",
+        });
+    }
+};
+
+export { login, logout, forgetPassword, resetPassword, googleLogin };

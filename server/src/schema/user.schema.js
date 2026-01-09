@@ -20,7 +20,12 @@ const userSchema = sequelize.define(
         },
         password: {
             type: DataTypes.STRING,
+            allowNull: true,
+        },
+        accountType: {
+            type: DataTypes.ENUM("LOCAL", "GOOGLE"),
             allowNull: false,
+            defaultValue: "LOCAL",
         },
     },
     {

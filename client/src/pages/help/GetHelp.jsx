@@ -21,7 +21,7 @@ import {
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { helpValidator } from "@/utlis/post.validator";
+import { helpValidator } from "@/lib/post.validator";
 import toast, { Toaster } from "react-hot-toast";
 
 export default function GetHelp() {

@@ -1,4 +1,3 @@
-import image from "../../assets/loginpage.jpg";
 import google from "../../assets/Google.svg";
 import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
@@ -12,6 +11,7 @@ import { useAuth } from "../../hooks/useAuth";
 import { ThemeToggleSimple } from "../../components/ui/theme-toggle";
 import toast from "react-hot-toast";
 import ParticlesBackground from "../../components/ui/particles-background";
+import OAuth from "@/components/ui/OAuth";
 
 export default function SignInPage() {
     const navigate = useNavigate();
@@ -86,10 +86,7 @@ export default function SignInPage() {
 
     return (
         <>
-            <div
-                className="auth-container"
-                // style={{ backgroundImage: `url(${image})` }}
-            >
+            <div className="auth-container">
                 <div className="auth-overlay"></div>
                 <ParticlesBackground />
                 <div className="absolute top-4 right-4 z-10">
@@ -213,18 +210,7 @@ export default function SignInPage() {
                                 Sign In
                             </Button>
 
-                            <Button
-                                type="button"
-                                variant="outline"
-                                className="w-full cursor-pointer"
-                            >
-                                <img
-                                    src={google}
-                                    alt="Google"
-                                    className="mr-2 w-5 h-5"
-                                />
-                                Sign in with Google
-                            </Button>
+                            <OAuth text="Sign in with Google" />
                         </div>
 
                         <div className="text-center">

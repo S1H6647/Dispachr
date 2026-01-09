@@ -39,7 +39,7 @@ import {
 } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { passwordValidator } from "@/utlis/post.validator";
+import { passwordValidator } from "@/lib/post.validator";
 import toast from "react-hot-toast";
 import { Header } from "@/components/sidebar/Header";
 
