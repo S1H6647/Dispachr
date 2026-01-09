@@ -1,7 +1,6 @@
 import { Button } from "../../components/ui/button";
 import { useForm } from "react-hook-form";
 import { useState } from "react";
-import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Input } from "@/components/ui/input";
 import {
     Form,
@@ -22,9 +21,9 @@ import {
     Twitter,
     Facebook,
     Send,
-    FileText,
     Loader2,
     FileTextIcon,
+    Eye,
 } from "lucide-react";
 import {
     Card,
@@ -35,10 +34,12 @@ import {
 } from "@/components/ui/card";
 import toast from "react-hot-toast";
 import { Header } from "@/components/sidebar/Header";
+import { PostPreview } from "@/components/ui/post-preview";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function CreatePosts() {
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [inputValue, setInputValue] = useState("");
+    const { user } = useAuth();
     const maxLength = 255;
 
     const form = useForm({
@@ -101,12 +102,13 @@ export default function CreatePosts() {
 
     const descriptionValue = form.watch("description") || "";
     const titleValue = form.watch("title") || "";
+    const platformsValue = form.watch("platforms") || [];
     const characterCount = descriptionValue.length;
     const isNearLimit = characterCount > maxLength * 0.8;
     const isAtLimit = characterCount >= maxLength;
 
     return (
-        <div className="min-h-screen w-full bg-linear-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-900">
+        <div className="h-screen w-full bg-linear-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-900 overflow-hidden flex flex-col">
             {/* Header */}
             <Header
                 title="Create Post"
@@ -115,189 +117,230 @@ export default function CreatePosts() {
             />
 
             {/* Main Content */}
-            <main className="flex items-center justify-center min-h-[calc(100vh-73px)] p-6">
-                <Card className="w-full max-w-4xl shadow-lg">
-                    <CardHeader className="text-center pb-2">
-                        <CardTitle className="text-3xl font-bold">
-                            What's on your mind?
-                        </CardTitle>
-                        <CardDescription className="text-base">
-                            Share your content across multiple platforms
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent className="pt-4">
-                        {/* Form */}
-                        <Form {...form}>
-                            <form
-                                onSubmit={form.handleSubmit(onSubmit)}
-                                className="space-y-6"
-                            >
-                                {/* Title Field */}
-                                <FormField
-                                    control={form.control}
-                                    name="title"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel className="text-base">
-                                                Title
-                                            </FormLabel>
-                                            <FormControl>
-                                                <Input
-                                                    placeholder="Give your post a catchy title..."
-                                                    className="h-12 text-base"
-                                                    {...field}
-                                                    value={titleValue}
-                                                />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-
-                                {/* Description Field */}
-                                <FormField
-                                    control={form.control}
-                                    name="description"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel className="text-base">
-                                                Content
-                                            </FormLabel>
-                                            <FormControl>
-                                                <Textarea
-                                                    placeholder="Write your post content here..."
-                                                    className="min-h-[200px] text-base resize-none"
-                                                    maxLength={maxLength}
-                                                    {...field}
-                                                    value={descriptionValue}
-                                                />
-                                            </FormControl>
-                                            <div className="flex justify-end">
-                                                <span
-                                                    className={`text-sm ${
-                                                        isAtLimit
-                                                            ? "text-red-500 font-medium"
-                                                            : isNearLimit
-                                                            ? "text-amber-500"
-                                                            : "text-muted-foreground"
-                                                    }`}
-                                                >
-                                                    {characterCount} /{" "}
-                                                    {maxLength}
-                                                </span>
-                                            </div>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-
-                                {/* Platforms Selection */}
-                                <FormField
-                                    control={form.control}
-                                    name="platforms"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel className="text-base">
-                                                Publish to
-                                            </FormLabel>
-                                            <div className="grid grid-cols-3 gap-4 pt-2">
-                                                {platforms.map((platform) => {
-                                                    const isChecked =
-                                                        field.value?.includes(
-                                                            platform.id
-                                                        );
-                                                    return (
-                                                        <Label
-                                                            key={platform.id}
-                                                            className={`
-                                                                flex flex-col items-center gap-3 p-5 rounded-2xl border-2 cursor-pointer transition-all
-                                                                ${
-                                                                    isChecked
-                                                                        ? "border-primary bg-primary/5 shadow-md"
-                                                                        : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800"
-                                                                }
-                                                            `}
-                                                        >
-                                                            <Checkbox
-                                                                checked={
-                                                                    isChecked
-                                                                }
-                                                                onCheckedChange={(
-                                                                    checked
-                                                                ) => {
-                                                                    if (
-                                                                        checked
-                                                                    ) {
-                                                                        field.onChange(
-                                                                            [
-                                                                                ...field.value,
-                                                                                platform.id,
-                                                                            ]
-                                                                        );
-                                                                    } else {
-                                                                        field.onChange(
-                                                                            field.value.filter(
-                                                                                (
-                                                                                    v
-                                                                                ) =>
-                                                                                    v !==
-                                                                                    platform.id
-                                                                            )
-                                                                        );
-                                                                    }
-                                                                }}
-                                                                className="sr-only"
-                                                            />
-                                                            <div
-                                                                className={`p-3 rounded-full ${
-                                                                    isChecked
-                                                                        ? "bg-primary/10 text-primary"
-                                                                        : "bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400"
-                                                                }`}
-                                                            >
-                                                                {platform.icon}
-                                                            </div>
-                                                            <span
-                                                                className={`font-medium ${
-                                                                    isChecked
-                                                                        ? "text-primary"
-                                                                        : "text-gray-600 dark:text-gray-400"
-                                                                }`}
-                                                            >
-                                                                {platform.name}
-                                                            </span>
-                                                        </Label>
-                                                    );
-                                                })}
-                                            </div>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-
-                                {/* Submit Button */}
-                                <Button
-                                    type="submit"
-                                    size="lg"
-                                    disabled={isSubmitting}
-                                    className="w-full h-12 text-base gap-2 cursor-pointer"
+            <main className="flex-1 p-6 overflow-auto">
+                <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* Left Column - Form */}
+                    <Card className="shadow-lg h-fit">
+                        <CardHeader className="text-center pb-2">
+                            <CardTitle className="text-3xl font-bold">
+                                What's on your mind?
+                            </CardTitle>
+                            <CardDescription className="text-base">
+                                Share your content across multiple platforms
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="pt-4">
+                            {/* Form */}
+                            <Form {...form}>
+                                <form
+                                    onSubmit={form.handleSubmit(onSubmit)}
+                                    className="space-y-6"
                                 >
-                                    {isSubmitting ? (
-                                        <>
-                                            <Loader2 className="h-5 w-5 animate-spin" />
-                                            Publishing...
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Send className="h-5 w-5" />
-                                            Publish Post
-                                        </>
-                                    )}
-                                </Button>
-                            </form>
-                        </Form>
-                    </CardContent>
-                </Card>
+                                    {/* Title Field */}
+                                    <FormField
+                                        control={form.control}
+                                        name="title"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel className="text-base">
+                                                    Title
+                                                </FormLabel>
+                                                <FormControl>
+                                                    <Input
+                                                        placeholder="Give your post a catchy title..."
+                                                        className="h-12 text-base"
+                                                        {...field}
+                                                        value={titleValue}
+                                                    />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+
+                                    {/* Description Field */}
+                                    <FormField
+                                        control={form.control}
+                                        name="description"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel className="text-base">
+                                                    Content
+                                                </FormLabel>
+                                                <FormControl>
+                                                    <Textarea
+                                                        placeholder="Write your post content here..."
+                                                        className="min-h-[200px] text-base resize-none"
+                                                        maxLength={maxLength}
+                                                        {...field}
+                                                        value={descriptionValue}
+                                                    />
+                                                </FormControl>
+                                                <div className="flex justify-end">
+                                                    <span
+                                                        className={`text-sm ${
+                                                            isAtLimit
+                                                                ? "text-red-500 font-medium"
+                                                                : isNearLimit
+                                                                ? "text-amber-500"
+                                                                : "text-muted-foreground"
+                                                        }`}
+                                                    >
+                                                        {characterCount} /{" "}
+                                                        {maxLength}
+                                                    </span>
+                                                </div>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+
+                                    {/* Platforms Selection */}
+                                    <FormField
+                                        control={form.control}
+                                        name="platforms"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel className="text-base">
+                                                    Publish to
+                                                </FormLabel>
+                                                <div className="grid grid-cols-3 gap-4 pt-2">
+                                                    {platforms.map(
+                                                        (platform) => {
+                                                            const isChecked =
+                                                                field.value?.includes(
+                                                                    platform.id
+                                                                );
+                                                            return (
+                                                                <Label
+                                                                    key={
+                                                                        platform.id
+                                                                    }
+                                                                    className={`
+                                                                    flex flex-col items-center gap-3 p-5 rounded-2xl border-2 cursor-pointer transition-all
+                                                                    ${
+                                                                        isChecked
+                                                                            ? "border-primary bg-primary/5 shadow-md"
+                                                                            : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800"
+                                                                    }
+                                                                `}
+                                                                >
+                                                                    <Checkbox
+                                                                        checked={
+                                                                            isChecked
+                                                                        }
+                                                                        onCheckedChange={(
+                                                                            checked
+                                                                        ) => {
+                                                                            if (
+                                                                                checked
+                                                                            ) {
+                                                                                field.onChange(
+                                                                                    [
+                                                                                        ...field.value,
+                                                                                        platform.id,
+                                                                                    ]
+                                                                                );
+                                                                            } else {
+                                                                                field.onChange(
+                                                                                    field.value.filter(
+                                                                                        (
+                                                                                            v
+                                                                                        ) =>
+                                                                                            v !==
+                                                                                            platform.id
+                                                                                    )
+                                                                                );
+                                                                            }
+                                                                        }}
+                                                                        className="sr-only"
+                                                                    />
+                                                                    <div
+                                                                        className={`p-3 rounded-full ${
+                                                                            isChecked
+                                                                                ? "bg-primary/10 text-primary"
+                                                                                : "bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400"
+                                                                        }`}
+                                                                    >
+                                                                        {
+                                                                            platform.icon
+                                                                        }
+                                                                    </div>
+                                                                    <span
+                                                                        className={`font-medium ${
+                                                                            isChecked
+                                                                                ? "text-primary"
+                                                                                : "text-gray-600 dark:text-gray-400"
+                                                                        }`}
+                                                                    >
+                                                                        {
+                                                                            platform.name
+                                                                        }
+                                                                    </span>
+                                                                </Label>
+                                                            );
+                                                        }
+                                                    )}
+                                                </div>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+
+                                    {/* Submit Button */}
+                                    <Button
+                                        type="submit"
+                                        size="lg"
+                                        disabled={isSubmitting}
+                                        className="w-full h-12 text-base gap-2 cursor-pointer"
+                                    >
+                                        {isSubmitting ? (
+                                            <>
+                                                <Loader2 className="h-5 w-5 animate-spin" />
+                                                Publishing...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Send className="h-5 w-5" />
+                                                Publish Post
+                                            </>
+                                        )}
+                                    </Button>
+                                </form>
+                            </Form>
+                        </CardContent>
+                    </Card>
+
+                    {/* Right Column - Preview */}
+                    <div className="lg:sticky h-fit">
+                        <Card className="shadow-lg">
+                            <CardHeader className="pb-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 rounded-lg bg-primary/10">
+                                        <Eye className="h-5 w-5 text-primary" />
+                                    </div>
+                                    <div>
+                                        <CardTitle className="text-xl">
+                                            Live Preview
+                                        </CardTitle>
+                                        <CardDescription>
+                                            See how your post will look on each
+                                            platform
+                                        </CardDescription>
+                                    </div>
+                                </div>
+                            </CardHeader>
+                            <CardContent>
+                                <PostPreview
+                                    title={titleValue}
+                                    description={descriptionValue}
+                                    selectedPlatforms={platformsValue}
+                                    userName={user?.fullName}
+                                />
+                            </CardContent>
+                        </Card>
+                    </div>
+                </div>
             </main>
         </div>
     );
