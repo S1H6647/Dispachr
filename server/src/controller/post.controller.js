@@ -1,8 +1,10 @@
 import postSchema from "../schema/post.schema.js";
 import {
     createTweetService,
+    deleteTweetService,
     getMyDataService,
     getUserTweetsService,
+    updateTweetPost,
 } from "../services/twitter.service.js";
 import {
     createFacebookPost,
@@ -30,9 +32,18 @@ const getTwitterPosts = async (_, response) => {
     try {
         const myData = await getMyDataService();
 
-        console.log(myData);
+        console.log("My Data: ", myData);
 
-        const userId = myData.data.id;
+        // myData.data is already the user ID string (not an object with .id)
+        const userId = myData.data;
+
+        if (!userId) {
+            console.error("❌ Failed to get Twitter user ID");
+            return response.status(500).json({
+                status: false,
+                message: "Failed to get Twitter user ID",
+            });
+        }
 
         const posts = await getUserTweetsService(userId);
         response.status(200).json(posts);
@@ -244,6 +255,49 @@ const editFacebookPostById = async (request, response) => {
     }
 };
 
+const editTweetsById = async (request, response) => {
+    try {
+        const { id: postId } = request.params;
+        const { newTitle, newDescription } = request.body;
+
+        if (!postId) {
+            return response.status(400).json({
+                status: false,
+                message: "No Twitter tweetId provided.",
+            });
+        }
+
+        if (!newTitle || !newDescription) {
+            return response.status(400).json({
+                status: false,
+                message: "Both newTitle and newDescription are required.",
+            });
+        }
+
+        const updatedPost = await updateTweetPost(
+            postId,
+            newTitle,
+            newDescription
+        );
+
+        if (updatedPost.status) {
+            response
+                .status(200)
+                .json({ status: true, message: updatedPost.message });
+        } else {
+            response
+                .status(500)
+                .json({ status: false, message: updatedPost.message });
+        }
+    } catch (error) {
+        console.error(`❌ Failed to update Tweet: ${error}`);
+        response.status(500).json({
+            status: false,
+            message: "Failed to update Tweet.",
+        });
+    }
+};
+
 // Dispatch post to selected platforms
 const dispatchPost = async (request, response) => {
     try {
@@ -412,6 +466,41 @@ const getPostChart = async (request, response) => {
     }
 };
 
+const deleteTweetById = async (request, response) => {
+    try {
+        const { id: tweetId } = request.params;
+
+        if (!tweetId) {
+            return response.status(400).json({
+                status: false,
+                message: "No Twitter tweetId provided.",
+            });
+        }
+
+        console.log(`🗑️ Deleting tweet: ${tweetId}`);
+
+        const deletedTweet = await deleteTweetService(tweetId);
+
+        if (deletedTweet.status) {
+            response.status(200).json({
+                status: true,
+                message: "Tweet deleted successfully",
+            });
+        } else {
+            response.status(500).json({
+                status: false,
+                message: deletedTweet.error || "Failed to delete tweet",
+            });
+        }
+    } catch (error) {
+        console.error(`❌ Failed to delete Tweet: ${error}`);
+        response.status(500).json({
+            status: false,
+            message: "Failed to delete Tweet.",
+        });
+    }
+};
+
 export {
     getAllPosts,
     getTwitterPosts,
@@ -419,8 +508,10 @@ export {
     getPostById,
     createPost,
     deletePostById,
+    deleteTweetById,
     editPostById,
     editFacebookPostById,
+    editTweetsById,
     dispatchPost,
     deleteFacebookPosts,
     getPostChart,

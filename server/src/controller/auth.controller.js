@@ -241,7 +241,7 @@ const googleLogin = async (request, response) => {
             email: user.email,
         };
 
-        const tokenExpiry = "24h";
+        const tokenExpiry = "7d";
         const accessToken = jwt.sign(
             userData,
             process.env.ACCESS_TOKEN_SECRET,

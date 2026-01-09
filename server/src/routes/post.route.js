@@ -3,9 +3,11 @@ import {
     createPost,
     deleteFacebookPosts,
     deletePostById,
+    deleteTweetById,
     dispatchPost,
     editFacebookPostById,
     editPostById,
+    editTweetsById,
     getAllPosts,
     getFacebookPosts,
     getPostById,
@@ -26,10 +28,12 @@ router.get("/:id", getPostById);
 //Deleting posts
 router.delete("/:id", deletePostById);
 router.delete("/facebook/:id", deleteFacebookPosts);
+router.delete("/twitter/:id", deleteTweetById);
 
 // Updating posts
 router.put("/:id", editPostById);
 router.post("/facebook/:id", editFacebookPostById);
+router.post("/twitter/:id", editTweetsById);
 
 // Creating posts
 router.post("/", validatePlatform, dispatchPost);

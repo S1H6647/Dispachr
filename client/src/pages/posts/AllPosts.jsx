@@ -3,14 +3,11 @@ import {
     CardContent,
     CardDescription,
     CardHeader,
-    CardTitle,
 } from "@/components/ui/card";
 import { useEffect, useState } from "react";
 import {
     Globe,
     Calendar,
-    MessageSquare,
-    Trash2,
     PencilIcon,
     Trash2Icon,
     X,
@@ -72,7 +69,11 @@ export function AllPosts() {
                 console.log(data);
 
                 if (response.ok) {
-                    setPosts(data.data || []);
+                    // Sort posts from latest to oldest
+                    const sortedPosts = (data.data || []).sort(
+                        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+                    );
+                    setPosts(sortedPosts);
                 } else {
                     setError(data.message || "Failed to fetch posts");
                 }
