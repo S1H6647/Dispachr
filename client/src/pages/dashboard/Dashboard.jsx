@@ -14,6 +14,7 @@ export default function Dashboard() {
     const [weeklyCounts, setWeeklyCounts] = useState([]);
     const [recentWebsitePosts, setRecentWebsitePosts] = useState([]);
     const [recentFacebookPosts, setRecentFacebookPosts] = useState([]);
+    const [recentTwitterPosts, setRecentTwitterPosts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [postsLoading, setPostsLoading] = useState(true);
 
@@ -53,7 +54,7 @@ export default function Dashboard() {
                 if (websiteRes.ok) {
                     const websiteData = await websiteRes.json();
                     const posts = websiteData?.data || [];
-                    // Get the 5 most recent posts
+                    // Get the 3 most recent posts
                     setRecentWebsitePosts(posts.slice(0, 3));
                 }
 
@@ -62,8 +63,17 @@ export default function Dashboard() {
                 if (facebookRes.ok) {
                     const facebookData = await facebookRes.json();
                     const posts = facebookData?.data || [];
-                    // Get the 5 most recent posts
+                    // Get the 3 most recent posts
                     setRecentFacebookPosts(posts.slice(0, 3));
+                }
+
+                // Fetch Twitter posts
+                const twitterRes = await fetch("/api/posts/twitter");
+                if (twitterRes.ok) {
+                    const twitterData = await twitterRes.json();
+                    const posts = twitterData?.data || [];
+                    // Get the 3 most recent posts
+                    setRecentTwitterPosts(posts.slice(0, 3));
                 }
             } catch (err) {
                 console.error(err);
@@ -206,12 +216,13 @@ export default function Dashboard() {
                     <h3 className="text-lg font-semibold mb-5">Recent Posts</h3>
 
                     {postsLoading ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <Skeleton className="h-64 w-full" />
                             <Skeleton className="h-64 w-full" />
                             <Skeleton className="h-64 w-full" />
                         </div>
                     ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             {/* Website Posts */}
                             <div className="bg-white dark:bg-card border rounded-lg p-5">
                                 <div className="flex items-center gap-2 mb-4">
@@ -303,6 +314,56 @@ export default function Dashboard() {
                                     ) : (
                                         <p className="text-sm text-muted-foreground text-center py-8">
                                             No Facebook posts yet
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Twitter Posts */}
+                            <div className="bg-white dark:bg-card border rounded-lg p-5">
+                                <div className="flex items-center gap-2 mb-4">
+                                    <div className="w-3 h-3 rounded-full bg-chart-3"></div>
+                                    <h4 className="font-bold text-xl">
+                                        Twitter Posts
+                                    </h4>
+                                </div>
+
+                                <div className="space-y-3">
+                                    {recentTwitterPosts.length > 0 ? (
+                                        recentTwitterPosts.map((post) => (
+                                            <div
+                                                key={post.id}
+                                                className="p-3 border rounded-md hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                                            >
+                                                <h5 className="font-semibold text-sm mb-1">
+                                                    {post.text?.split(
+                                                        "\n\n"
+                                                    )[0] || ""}
+                                                </h5>
+                                                <p className="text-xs text-muted-foreground line-clamp-2 mb-2">
+                                                    {post.text?.split(
+                                                        "\n\n"
+                                                    )[1] || ""}
+                                                </p>
+                                                <p className="text-xs text-muted-foreground">
+                                                    {new Date(
+                                                        post.created_at
+                                                    ).toLocaleDateString(
+                                                        undefined,
+                                                        {
+                                                            month: "short",
+                                                            day: "numeric",
+                                                            year: "numeric",
+                                                            hour: "2-digit",
+                                                            minute: "2-digit",
+                                                        }
+                                                    )}
+                                                </p>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <p className="text-sm text-muted-foreground text-center py-8">
+                                            No Twitter posts yet
                                         </p>
                                     )}
                                 </div>
