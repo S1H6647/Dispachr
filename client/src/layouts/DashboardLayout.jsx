@@ -17,7 +17,7 @@ export default function DashboardLayout() {
     }
 
     return (
-        <SidebarProvider className="flex h-full">
+        <SidebarProvider className="flex min-h-screen">
             <AppSidebar />
             <Suspense fallback={<PageLoader />}>
                 <Outlet />

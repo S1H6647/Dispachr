@@ -115,7 +115,7 @@ const deleteUserById = async (request, response) => {
         await user.destroy();
 
         response.status(200).json({
-            data: user,
+            success: true,
             message: `User successfully deleted.`,
         });
         console.log(`✅ Post with id ${id} successfully deleted`);
@@ -141,6 +141,7 @@ const editUserById = async (request, response) => {
         });
 
         response.status(200).json({
+            success: true,
             data: {
                 id: user.id,
                 fullName: user.fullName,

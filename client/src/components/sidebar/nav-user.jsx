@@ -6,6 +6,7 @@ import {
     CircleUserRound,
     Loader2,
 } from "lucide-react";
+import toast from "react-hot-toast";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -44,6 +45,7 @@ export function NavUser({ user }) {
             const data = await response.json();
             if (data.status) {
                 clearAuth();
+                toast.success("You have been logged out");
                 navigate("/auth/signin", { replace: true });
             }
         } catch (error) {

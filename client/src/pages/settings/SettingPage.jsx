@@ -42,6 +42,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { passwordValidator } from "@/lib/post.validator";
 import toast from "react-hot-toast";
 import { Header } from "@/components/sidebar/Header";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function SettingPage() {
     const [user, setUser] = useState({});
@@ -55,6 +57,8 @@ export default function SettingPage() {
     const [isDeletingAccount, setIsDeletingAccount] = useState(false);
     const [deleteConfirmText, setDeleteConfirmText] = useState("");
     const nameRef = useRef(null);
+    const navigate = useNavigate();
+    const { clearAuth } = useAuth();
 
     const form = useForm({
         resolver: zodResolver(passwordValidator),
@@ -564,13 +568,21 @@ export default function SettingPage() {
                                     );
                                     const data = await response.json();
 
-                                    if (response.ok && data.status) {
-                                        toast.success(
-                                            data.message ||
-                                                "Account deleted successfully"
-                                        );
-                                        // Redirect to login or home page
-                                        window.location.href = "/auth/login";
+                                    console.log(data);
+
+                                    if (data.success) {
+                                        // Call logout API to clear auth-token cookie
+                                        await fetch("/api/auth/logout", {
+                                            method: "POST",
+                                        });
+                                        // Show success message first before clearing auth
+                                        toast.success(data.message);
+                                        // Clear client-side auth cache
+                                        clearAuth();
+                                        // Navigate to login page
+                                        navigate("/auth/signin", {
+                                            replace: true,
+                                        });
                                     } else {
                                         toast.error(
                                             data.message ||
