@@ -266,6 +266,7 @@ export function TwitterPosts() {
             )}
 
             {/* Search Bar */}
+            {!loading && posts.length > 0 && (
             <div className="px-6 pt-4 max-w-7xl mx-auto w-full">
                 <div className="relative group">
                     <div className="absolute inset-y-0 z-999 left-0 pl-3 flex items-center pointer-events-none text-slate-400 group-focus-within:text-sky-500 transition-colors">
@@ -289,6 +290,7 @@ export function TwitterPosts() {
                     )}
                 </div>
             </div>
+            )}
 
             {/* No posts */}
             <NoPost posts={filteredPosts} loading={loading} />

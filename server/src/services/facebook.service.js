@@ -117,18 +117,56 @@ async function createFacebookPostWithImage(title, description, imageUrl) {
 
 async function getFacebookPost() {
     try {
+        console.log("🚀 Starting Facebook posts fetch...");
+        
+        // Check if access token is configured
+        if (!process.env.FB_ACCESS_TOKEN) {
+            throw new Error("FB_ACCESS_TOKEN is not configured in environment variables");
+        }
+
+        const posts = await fetchFacebookPosts(process.env.FB_ACCESS_TOKEN);
+        
         return {
             status: true,
-            data: await fetchFacebookPosts(process.env.FB_ACCESS_TOKEN),
+            data: posts,
         };
     } catch (error) {
         console.error("❌ Error fetch posts from Facebook:", error.message);
-        if (error.code === 190) {
-            const newToken = await refreshAccessToken();
-            return {
-                status: true,
-                data: await fetchFacebookPosts(newToken),
-            };
+        console.error("Full error object:", error);
+        
+        // Parse error to check for token expiration
+        let errorCode = null;
+        let isTokenExpired = false;
+        
+        // Try to extract error code from the error message (which contains the JSON response)
+        if (error.message && error.message.includes('"code":190')) {
+            errorCode = 190;
+            isTokenExpired = true;
+        }
+        
+        // Also check if error object has the code directly
+        if (error.code === 190 || (error.error && error.error.code === 190)) {
+            errorCode = 190;
+            isTokenExpired = true;
+        }
+        
+        // Handle token expiration
+        if (isTokenExpired) {
+            console.log("🔄 Access token expired, attempting to refresh...");
+            try {
+                const newToken = await refreshAccessToken();
+                console.log("✅ Token refreshed successfully");
+                return {
+                    status: true,
+                    data: await fetchFacebookPosts(newToken),
+                };
+            } catch (refreshError) {
+                console.error("❌ Failed to refresh token:", refreshError.message);
+                return {
+                    status: false,
+                    message: "Failed to refresh expired access token: " + refreshError.message,
+                };
+            }
         }
 
         return {
@@ -139,21 +177,75 @@ async function getFacebookPost() {
 }
 
 async function fetchFacebookPosts(accessToken) {
-    const url = `https://graph.facebook.com/${GRAPH_API_VERSION}/me/posts?access_token=${accessToken}`;
-    const response = await fetch(url);
+    try {
+        // Debug: Check if access token exists
+        if (!accessToken) {
+            throw new Error("Access token is missing");
+        }
 
-    if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
+        const url = `https://graph.facebook.com/${GRAPH_API_VERSION}/me/posts?access_token=${accessToken}`;
+        
+        // Debug: Log the request (without exposing full token)
+        console.log(`🔍 Fetching Facebook posts from: ${GRAPH_API_VERSION}/me/posts`);
+        console.log(`🔍 Token exists: ${!!accessToken}, Token length: ${accessToken?.length || 0}`);
+
+        const response = await fetch(url, {
+            headers: {
+                'User-Agent': 'Dispachr/1.0'
+            },
+            signal: AbortSignal.timeout(15000) // 15 second timeout
+        });
+
+        // Debug: Log response status
+        console.log(`📡 Facebook API Response Status: ${response.status} ${response.statusText}`);
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error(`❌ Facebook API Error Response: ${errorText}`);
+            throw new Error(`HTTP ${response.status}: ${errorText}`);
+        }
+
+        const data = await response.json();
+        console.log("✅ Facebook posts fetched successfully. Count:", data.data?.length || 0);
+
+        if (data.error) {
+            console.error("❌ Facebook API returned error:", JSON.stringify(data.error, null, 2));
+            throw data.error;
+        }
+
+        return data.data;
+    } catch (error) {
+        // Enhanced error logging
+        console.error("❌ fetchFacebookPosts detailed error:");
+        console.error("  Error name:", error.name);
+        console.error("  Error message:", error.message);
+        console.error("  Error code:", error.code);
+        
+        if (error.cause) {
+            console.error("  Error cause:", error.cause);
+        }
+
+        // Check for timeout errors
+        if (error.name === 'AbortError' || error.name === 'TimeoutError') {
+            console.error("⚠️  Request timeout detected.");
+            console.error("   The Facebook API did not respond within 15 seconds.");
+            console.error("   Possible causes:");
+            console.error("   - Slow network connection");
+            console.error("   - Facebook API is experiencing issues");
+            console.error("   - Request is being rate limited");
+        }
+
+        // Check for common issues
+        if (error.message.includes("fetch failed")) {
+            console.error("⚠️  Network error detected. Possible causes:");
+            console.error("   - No internet connection");
+            console.error("   - DNS resolution failure");
+            console.error("   - Firewall blocking the request");
+            console.error("   - SSL/TLS certificate issues");
+        }
+
+        throw error;
     }
-
-    const data = await response.json();
-    console.log("Facebook : ", data);
-
-    if (data.error) {
-        throw data.error;
-    }
-
-    return data.data;
 }
 
 async function refreshAccessToken() {

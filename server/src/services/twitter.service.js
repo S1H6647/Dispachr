@@ -16,6 +16,15 @@ const config = {
     accessTokenSecret: process.env.TWITTER_ACCESS_TOKEN_SECRET,
 };
 
+// Validate Twitter configuration on module load
+if (!config.consumerKey || !config.consumerSecret || !config.accessToken || !config.accessTokenSecret) {
+    console.warn("⚠️  Twitter API credentials are incomplete:");
+    console.warn(`   TWITTER_CONSUMER_KEY: ${config.consumerKey ? '✅' : '❌ Missing'}`);
+    console.warn(`   TWITTER_CONSUMER_KEY_SECRET: ${config.consumerSecret ? '✅' : '❌ Missing'}`);
+    console.warn(`   TWITTER_ACCESS_TOKEN: ${config.accessToken ? '✅' : '❌ Missing'}`);
+    console.warn(`   TWITTER_ACCESS_TOKEN_SECRET: ${config.accessTokenSecret ? '✅' : '❌ Missing'}`);
+}
+
 const BASE_URL = "https://api.twitter.com/2";
 
 // OAuth 1.0a signing
@@ -53,8 +62,20 @@ async function twitterRequest(endpoint, method = "GET", body = null) {
         options.body = JSON.stringify(body);
     }
 
+    console.log(`🔍 Twitter API Request: ${method} ${endpoint}`);
+    
     const response = await fetch(url, options);
-    return response.json();
+    
+    console.log(`📡 Twitter API Response: ${response.status} ${response.statusText}`);
+    
+    const data = await response.json();
+    
+    // Log errors for debugging
+    if (!response.ok || data.errors) {
+        console.error(`❌ Twitter API Error Response:`, JSON.stringify(data, null, 2));
+    }
+    
+    return data;
 }
 
 /**
@@ -189,15 +210,36 @@ export async function getMyDataService() {
         cacheKey,
         async () => {
             try {
+                console.log("🚀 Fetching Twitter user data...");
+                
                 const data = await twitterRequest("/users/me");
 
                 console.log("My data: ", data);
-                console.log("Id: ", data.data.id);
-
+                
+                // Check for errors first
                 if (data.errors) {
+                    console.error("❌ Twitter API returned errors:", data.errors);
                     return { status: false, error: data.errors };
                 }
+                
+                // Check if data.data exists
+                if (!data.data) {
+                    console.error("❌ Twitter API response missing data field:", data);
+                    
+                    // Check for specific error types
+                    if (data.title === 'Unauthorized' || data.status === 401) {
+                        console.error("⚠️  401 Unauthorized - Check your Twitter API credentials:");
+                        console.error("   - TWITTER_CONSUMER_KEY");
+                        console.error("   - TWITTER_CONSUMER_KEY_SECRET");
+                        console.error("   - TWITTER_ACCESS_TOKEN");
+                        console.error("   - TWITTER_ACCESS_TOKEN_SECRET");
+                        return { status: false, error: "Twitter authentication failed: Invalid or expired credentials" };
+                    }
+                    
+                    return { status: false, error: "Invalid response from Twitter API" };
+                }
 
+                console.log("✅ Twitter user ID: ", data.data.id);
                 return { status: true, data: data.data.id };
             } catch (error) {
                 console.error("❌ Error fetching user data:", error.message);

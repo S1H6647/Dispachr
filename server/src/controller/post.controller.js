@@ -34,6 +34,16 @@ const getTwitterPosts = async (_, response) => {
 
         console.log("My Data: ", myData);
 
+        // Check if the request was successful
+        if (!myData.status) {
+            console.error("❌ Failed to get Twitter user data:", myData.error);
+            return response.status(401).json({
+                status: false,
+                message: typeof myData.error === 'string' ? myData.error : "Failed to authenticate with Twitter",
+                error: myData.error,
+            });
+        }
+
         // myData.data is already the user ID string (not an object with .id)
         const userId = myData.data;
 
@@ -45,14 +55,27 @@ const getTwitterPosts = async (_, response) => {
             });
         }
 
+        console.log("✅ Twitter user ID obtained:", userId);
+        
         const posts = await getUserTweetsService(userId);
+        
+        // Check if fetching posts was successful
+        if (!posts.status) {
+            console.error("❌ Failed to fetch tweets:", posts.error);
+            return response.status(500).json({
+                status: false,
+                message: "Failed to fetch Twitter posts",
+                error: posts.error,
+            });
+        }
+        
         response.status(200).json(posts);
-        console.log(posts);
+        console.log("✅ Successfully fetched", posts.data?.length || 0, "tweets");
     } catch (error) {
-        console.error(`❌ Error in getTwitterPosts controller. ${error}`);
+        console.error(`❌ Error in getTwitterPosts controller:`, error);
         response
             .status(500)
-            .json({ message: "Failed to fetch Twitter posts." });
+            .json({ message: "Failed to fetch Twitter posts.", error: error.message });
     }
 };
 
