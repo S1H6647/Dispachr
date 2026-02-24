@@ -1,4 +1,52 @@
-import {
+import { jest } from '@jest/globals';
+
+// Mock dependencies before importing
+jest.unstable_mockModule('../schema/post.schema.js', () => ({
+    default: {
+        findAll: jest.fn(),
+        findOne: jest.fn(),
+        findByPk: jest.fn(),
+        create: jest.fn(),
+        update: jest.fn(),
+        destroy: jest.fn(),
+    }
+}));
+
+jest.unstable_mockModule('../services/twitter.service.js', () => ({
+    createTweetService: jest.fn(),
+    deleteTweetService: jest.fn(),
+    getMyDataService: jest.fn(),
+    getUserTweetsService: jest.fn(),
+    updateTweetPost: jest.fn(),
+}));
+
+jest.unstable_mockModule('../services/facebook.service.js', () => ({
+    createFacebookPost: jest.fn(),
+    deleteFacebookPost: jest.fn(),
+    getFacebookPost: jest.fn(),
+    updateFacebookPost: jest.fn(),
+}));
+
+jest.unstable_mockModule('../utils/user.caplitalize.js', () => ({
+    caplitalizeFirstWord: jest.fn((str) => str),
+}));
+
+const { default: postSchema } = await import('../schema/post.schema.js');
+const {
+    createTweetService,
+    deleteTweetService,
+    getMyDataService,
+    getUserTweetsService,
+    updateTweetPost,
+} = await import('../services/twitter.service.js');
+const {
+    createFacebookPost,
+    deleteFacebookPost,
+    getFacebookPost,
+    updateFacebookPost,
+} = await import('../services/facebook.service.js');
+const { caplitalizeFirstWord } = await import('../utils/user.caplitalize.js');
+const {
     getAllPosts,
     getTwitterPosts,
     getFacebookPosts,
@@ -12,29 +60,7 @@ import {
     dispatchPost,
     deleteFacebookPosts,
     getPostChart,
-} from '../controller/post.controller.js';
-import postSchema from '../schema/post.schema.js';
-import {
-    createTweetService,
-    deleteTweetService,
-    getMyDataService,
-    getUserTweetsService,
-    updateTweetPost,
-} from '../services/twitter.service.js';
-import {
-    createFacebookPost,
-    deleteFacebookPost,
-    getFacebookPost,
-    updateFacebookPost,
-} from '../services/facebook.service.js';
-import { caplitalizeFirstWord } from '../utils/user.caplitalize.js';
-import { jest } from '@jest/globals';
-
-// Mock dependencies
-jest.mock('../schema/post.schema.js');
-jest.mock('../services/twitter.service.js');
-jest.mock('../services/facebook.service.js');
-jest.mock('../utils/user.caplitalize.js');
+} = await import('../controller/post.controller.js');
 
 describe('Post Controller', () => {
     let mockRequest;
@@ -50,7 +76,7 @@ describe('Post Controller', () => {
             json: jest.fn().mockReturnThis(),
         };
         jest.clearAllMocks();
-        
+
         // Mock capitalize function to return input as-is
         caplitalizeFirstWord.mockImplementation((str) => str);
     });

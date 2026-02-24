@@ -1,5 +1,32 @@
 import { jest } from '@jest/globals';
-import {
+
+// Mock dependencies before importing
+jest.unstable_mockModule('../schema/user.schema.js', () => ({
+    default: {
+        findAll: jest.fn(),
+        findOne: jest.fn(),
+        findByPk: jest.fn(),
+        create: jest.fn(),
+        update: jest.fn(),
+        scope: jest.fn(),
+    }
+}));
+
+jest.unstable_mockModule('argon2', () => ({
+    default: {
+        hash: jest.fn(),
+        verify: jest.fn(),
+    }
+}));
+
+jest.unstable_mockModule('../utils/user.caplitalize.js', () => ({
+    caplitalizeEachWord: jest.fn((str) => str),
+}));
+
+const { default: userSchema } = await import('../schema/user.schema.js');
+const { default: argon2 } = await import('argon2');
+const { caplitalizeEachWord } = await import('../utils/user.caplitalize.js');
+const {
     getAllUser,
     getUserById,
     createUser,
@@ -7,15 +34,7 @@ import {
     editUserById,
     getCurrentUser,
     CheckPassword,
-} from '../controller/user.controller.js';
-import userSchema from '../schema/user.schema.js';
-import argon2 from 'argon2';
-import { caplitalizeEachWord } from '../utils/user.caplitalize.js';
-
-// Mock dependencies
-jest.mock('../schema/user.schema.js');
-jest.mock('argon2');
-jest.mock('../utils/user.caplitalize.js');
+} = await import('../controller/user.controller.js');
 
 describe('User Controller', () => {
     let mockRequest;
@@ -32,7 +51,7 @@ describe('User Controller', () => {
             json: jest.fn().mockReturnThis(),
         };
         jest.clearAllMocks();
-        
+
         // Mock capitalize function to return input as-is
         caplitalizeEachWord.mockImplementation((str) => str);
     });

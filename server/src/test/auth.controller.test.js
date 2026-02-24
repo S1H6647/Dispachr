@@ -1,20 +1,46 @@
-import { login, logout, forgetPassword, resetPassword, googleLogin } from '../controller/auth.controller.js';
-import userSchema from '../schema/user.schema.js';
-import argon2 from 'argon2';
-import jwt from 'jsonwebtoken';
-import { sendResetPasswordEmail } from '../services/email.service.js';
 import { jest } from '@jest/globals';
 
-// Mock dependencies
-jest.mock('../schema/user.schema.js');
-jest.mock('argon2');
-jest.mock('jsonwebtoken');
-jest.mock('../services/email.service.js');
-jest.mock('../middleware/createToken.js', () => ({
+// Mock dependencies before importing
+jest.unstable_mockModule('../schema/user.schema.js', () => ({
+    default: {
+        findAll: jest.fn(),
+        findOne: jest.fn(),
+        findByPk: jest.fn(),
+        create: jest.fn(),
+        update: jest.fn(),
+        scope: jest.fn(),
+    }
+}));
+
+jest.unstable_mockModule('argon2', () => ({
+    default: {
+        hash: jest.fn(),
+        verify: jest.fn(),
+    }
+}));
+
+jest.unstable_mockModule('jsonwebtoken', () => ({
+    default: {
+        sign: jest.fn(),
+        verify: jest.fn(),
+    }
+}));
+
+jest.unstable_mockModule('../services/email.service.js', () => ({
+    sendResetPasswordEmail: jest.fn(),
+}));
+
+jest.unstable_mockModule('../middleware/createToken.js', () => ({
     createToken: jest.fn((response, token, isRemember) => {
         response.cookie('auth-token', token);
     })
 }));
+
+const { default: userSchema } = await import('../schema/user.schema.js');
+const { default: argon2 } = await import('argon2');
+const { default: jwt } = await import('jsonwebtoken');
+const { sendResetPasswordEmail } = await import('../services/email.service.js');
+const { login, logout, forgetPassword, resetPassword, googleLogin } = await import('../controller/auth.controller.js');
 
 describe('Auth Controller', () => {
     let mockRequest;
